@@ -30,6 +30,7 @@ public class RequestDispatcher
     private final AuthFacade authFacade;
     private final ConversationFacade conversationFacade;
     private final FollowQueryFacade followQueryFacade;
+    private final HashtagFacade hashtagFacade;
     private final MediaFacade mediaFacade;
     private final MessageFacade messageFacade;
     private final NotificationFacade notificationFacade;
@@ -147,6 +148,14 @@ public class RequestDispatcher
                  NOTIFICATION_READ_ALL ->
 
                     dispatchNotification(request);
+
+            // ---------------- HASHTAG ----------------
+
+            case HASHTAG_FOLLOW,
+                 HASHTAG_UNFOLLOW,
+                 HASHTAG_GET_TWEETS ->
+
+                    dispatchHashtag(request);
         };
     }
 
@@ -510,6 +519,32 @@ public class RequestDispatcher
 
                         default -> throw new IllegalArgumentException(
                                 "Unsupported notification request: " + request.type());
+                    };
+                });
+    }
+
+    public ResponseEnvelope dispatchHashtag(RequestEnvelope request)
+    {
+        return execute(
+                request,
+                hashtagFacade,
+                (facade, payload) ->
+                {
+                    UUID requestId = request.requestId();
+
+                    return switch (request.type())
+                    {
+                        case HASHTAG_FOLLOW ->
+                                handleFollowHashtag(requestId, payload, facade);
+
+                        case HASHTAG_UNFOLLOW ->
+                                handleUnfollowHashtag(requestId, payload, facade);
+
+                        case HASHTAG_GET_TWEETS ->
+                                handleGetHashtagTweets(requestId, payload, facade);
+
+                        default -> throw new IllegalArgumentException(
+                                "Unsupported hashtag request: " + request.type());
                     };
                 });
     }
@@ -2035,6 +2070,90 @@ public class RequestDispatcher
         );
     }
 
+    //===============================================================
+    //                     DISPATCH HASHTAG
+    //===============================================================
+    private ResponseEnvelope handleFollowHashtag(
+            UUID requestId,
+            JsonElement payload,
+            HashtagFacade facade)
+    {
+        FollowHashtagRequest request =
+                gson.fromJson(payload, FollowHashtagRequest.class);
+
+        Result<HashtagFollowResponse> result = facade.follow(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.HASHTAG_FOLLOW_RESPONSE,
+                    "HASHTAG_FOLLOW_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.HASHTAG_FOLLOW_RESPONSE,
+                result.getData()
+        );
+    }
+
+    private ResponseEnvelope handleUnfollowHashtag(
+            UUID requestId,
+            JsonElement payload,
+            HashtagFacade facade)
+    {
+        UnfollowHashtagRequest request =
+                gson.fromJson(payload, UnfollowHashtagRequest.class);
+
+        Result<HashtagFollowResponse> result = facade.unfollow(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.HASHTAG_UNFOLLOW_RESPONSE,
+                    "HASHTAG_UNFOLLOW_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.HASHTAG_UNFOLLOW_RESPONSE,
+                result.getData()
+        );
+    }
+
+    private ResponseEnvelope handleGetHashtagTweets(
+            UUID requestId,
+            JsonElement payload,
+            HashtagFacade facade)
+    {
+        GetHashtagTweetsRequest request =
+                gson.fromJson(payload, GetHashtagTweetsRequest.class);
+
+        Result<HashtagTweetsResponse> result = facade.getTweets(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.HASHTAG_GET_TWEETS_RESPONSE,
+                    "HASHTAG_GET_TWEETS_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.HASHTAG_GET_TWEETS_RESPONSE,
+                result.getData()
+        );
+    }
+
     private ResponseType responseTypeFor(RequestType requestType)
     {
         return switch (requestType)
@@ -2076,6 +2195,9 @@ public class RequestDispatcher
             case NOTIFICATION_GET -> ResponseType.NOTIFICATION_GET_RESPONSE;
             case NOTIFICATION_READ -> ResponseType.NOTIFICATION_READ_RESPONSE;
             case NOTIFICATION_READ_ALL -> ResponseType.NOTIFICATION_READ_ALL_RESPONSE;
+            case HASHTAG_FOLLOW -> ResponseType.HASHTAG_FOLLOW_RESPONSE;
+            case HASHTAG_UNFOLLOW -> ResponseType.HASHTAG_UNFOLLOW_RESPONSE;
+            case HASHTAG_GET_TWEETS -> ResponseType.HASHTAG_GET_TWEETS_RESPONSE;
             case USER_GET_PROFILE -> ResponseType.USER_GET_PROFILE_RESPONSE;
             case USER_SEARCH -> ResponseType.USER_SEARCH_RESPONSE;
             case USER_UPDATE_PROFILE -> ResponseType.USER_UPDATE_PROFILE_RESPONSE;

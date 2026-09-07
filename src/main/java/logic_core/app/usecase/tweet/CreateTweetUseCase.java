@@ -10,6 +10,7 @@ import logic_core.app.mapper.TweetMapper;
 import logic_core.app.mapper.UserSummaryResponseMapper;
 import logic_core.app.security.AuthLockOrchestrator;
 import logic_core.app.security.SessionUserContext;
+import logic_core.app.service.HashtagApplicationService;
 import logic_core.app.service.NotificationApplicationService;
 import logic_core.common.exception.ConflictException;
 import logic_core.common.exception.ForbiddenException;
@@ -46,6 +47,7 @@ public class CreateTweetUseCase
     @NonNull private final AuthLockOrchestrator lockOrchestrator;
     @NonNull private final MediaRepository mediaRepository;
     @NonNull private final NotificationApplicationService notificationService;
+    @NonNull private final HashtagApplicationService hashtagService;
 
     @Transactional
     public Result<TweetResponse> execute(@NonNull CreateTweetRequest request)
@@ -92,6 +94,11 @@ public class CreateTweetUseCase
                             savedTweet.getId(),
                             request.mediaUrls()
                     );
+
+            hashtagService.processTweetHashtags(
+                    savedTweet.getContent(),
+                    savedTweet.getId()
+            );
 
             if (savedTweet.getQuotedTweetId() != null)
             {

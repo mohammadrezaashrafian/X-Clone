@@ -6,6 +6,7 @@ import logic_core.app.dto.request.LikeTweetRequest;
 import logic_core.app.facade.AuthFacade;
 import logic_core.app.facade.ConversationFacade;
 import logic_core.app.facade.FollowQueryFacade;
+import logic_core.app.facade.HashtagFacade;
 import logic_core.app.facade.MediaFacade;
 import logic_core.app.facade.MessageFacade;
 import logic_core.app.facade.NotificationFacade;
@@ -39,6 +40,7 @@ class RequestDispatcherTypedErrorTest
     private final AuthFacade authFacade = mock(AuthFacade.class);
     private final ConversationFacade conversationFacade = mock(ConversationFacade.class);
     private final FollowQueryFacade followQueryFacade = mock(FollowQueryFacade.class);
+    private final HashtagFacade hashtagFacade = mock(HashtagFacade.class);
     private final MediaFacade mediaFacade = mock(MediaFacade.class);
     private final MessageFacade messageFacade = mock(MessageFacade.class);
     private final NotificationFacade notificationFacade = mock(NotificationFacade.class);
@@ -52,6 +54,7 @@ class RequestDispatcherTypedErrorTest
             authFacade,
             conversationFacade,
             followQueryFacade,
+            hashtagFacade,
             mediaFacade,
             messageFacade,
             notificationFacade,
