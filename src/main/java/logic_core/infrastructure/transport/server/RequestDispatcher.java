@@ -28,6 +28,7 @@ public class RequestDispatcher
 {
     private final Gson gson;
     private final AuthFacade authFacade;
+    private final BookmarkFacade bookmarkFacade;
     private final ConversationFacade conversationFacade;
     private final FollowQueryFacade followQueryFacade;
     private final HashtagFacade hashtagFacade;
@@ -156,6 +157,15 @@ public class RequestDispatcher
                  HASHTAG_GET_TWEETS ->
 
                     dispatchHashtag(request);
+
+            // ---------------- BOOKMARK ----------------
+
+            case TWEET_BOOKMARK,
+                 TWEET_UNBOOKMARK,
+                 BOOKMARKS_GET,
+                 USER_GET_IS_BOOKMARKED ->
+
+                    dispatchBookmark(request);
         };
     }
 
@@ -545,6 +555,35 @@ public class RequestDispatcher
 
                         default -> throw new IllegalArgumentException(
                                 "Unsupported hashtag request: " + request.type());
+                    };
+                });
+    }
+
+    public ResponseEnvelope dispatchBookmark(RequestEnvelope request)
+    {
+        return execute(
+                request,
+                bookmarkFacade,
+                (facade, payload) ->
+                {
+                    UUID requestId = request.requestId();
+
+                    return switch (request.type())
+                    {
+                        case TWEET_BOOKMARK ->
+                                handleBookmarkTweet(requestId, payload, facade);
+
+                        case TWEET_UNBOOKMARK ->
+                                handleUnbookmarkTweet(requestId, payload, facade);
+
+                        case BOOKMARKS_GET ->
+                                handleGetBookmarks(requestId, payload, facade);
+
+                        case USER_GET_IS_BOOKMARKED ->
+                                handleIsBookmarked(requestId, payload, facade);
+
+                        default -> throw new IllegalArgumentException(
+                                "Unsupported bookmark request: " + request.type());
                     };
                 });
     }
@@ -2154,6 +2193,117 @@ public class RequestDispatcher
         );
     }
 
+    //===============================================================
+    //                     DISPATCH BOOKMARK
+    //===============================================================
+    private ResponseEnvelope handleBookmarkTweet(
+            UUID requestId,
+            JsonElement payload,
+            BookmarkFacade facade)
+    {
+        BookmarkTweetRequest request =
+                gson.fromJson(payload, BookmarkTweetRequest.class);
+
+        Result<BookmarkResponse> result = facade.bookmark(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.TWEET_BOOKMARK_RESPONSE,
+                    "TWEET_BOOKMARK_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.TWEET_BOOKMARK_RESPONSE,
+                result.getData()
+        );
+    }
+
+    private ResponseEnvelope handleUnbookmarkTweet(
+            UUID requestId,
+            JsonElement payload,
+            BookmarkFacade facade)
+    {
+        UnbookmarkTweetRequest request =
+                gson.fromJson(payload, UnbookmarkTweetRequest.class);
+
+        Result<BookmarkResponse> result = facade.unbookmark(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.TWEET_UNBOOKMARK_RESPONSE,
+                    "TWEET_UNBOOKMARK_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.TWEET_UNBOOKMARK_RESPONSE,
+                result.getData()
+        );
+    }
+
+    private ResponseEnvelope handleGetBookmarks(
+            UUID requestId,
+            JsonElement payload,
+            BookmarkFacade facade)
+    {
+        GetBookmarksRequest request =
+                gson.fromJson(payload, GetBookmarksRequest.class);
+
+        Result<GetBookmarksResponse> result = facade.getBookmarks(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.BOOKMARKS_GET_RESPONSE,
+                    "BOOKMARKS_GET_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.BOOKMARKS_GET_RESPONSE,
+                result.getData()
+        );
+    }
+
+    private ResponseEnvelope handleIsBookmarked(
+            UUID requestId,
+            JsonElement payload,
+            BookmarkFacade facade)
+    {
+        GetIsBookmarkedRequest request =
+                gson.fromJson(payload, GetIsBookmarkedRequest.class);
+
+        Result<GetIsBookmarkedResponse> result = facade.isBookmarked(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.USER_GET_IS_BOOKMARKED_RESPONSE,
+                    "GET_IS_BOOKMARKED_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.USER_GET_IS_BOOKMARKED_RESPONSE,
+                result.getData()
+        );
+    }
+
     private ResponseType responseTypeFor(RequestType requestType)
     {
         return switch (requestType)
@@ -2198,6 +2348,10 @@ public class RequestDispatcher
             case HASHTAG_FOLLOW -> ResponseType.HASHTAG_FOLLOW_RESPONSE;
             case HASHTAG_UNFOLLOW -> ResponseType.HASHTAG_UNFOLLOW_RESPONSE;
             case HASHTAG_GET_TWEETS -> ResponseType.HASHTAG_GET_TWEETS_RESPONSE;
+            case TWEET_BOOKMARK -> ResponseType.TWEET_BOOKMARK_RESPONSE;
+            case TWEET_UNBOOKMARK -> ResponseType.TWEET_UNBOOKMARK_RESPONSE;
+            case BOOKMARKS_GET -> ResponseType.BOOKMARKS_GET_RESPONSE;
+            case USER_GET_IS_BOOKMARKED -> ResponseType.USER_GET_IS_BOOKMARKED_RESPONSE;
             case USER_GET_PROFILE -> ResponseType.USER_GET_PROFILE_RESPONSE;
             case USER_SEARCH -> ResponseType.USER_SEARCH_RESPONSE;
             case USER_UPDATE_PROFILE -> ResponseType.USER_UPDATE_PROFILE_RESPONSE;

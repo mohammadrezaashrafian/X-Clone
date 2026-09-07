@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import logic_core.app.dto.request.LikeTweetRequest;
 import logic_core.app.facade.AuthFacade;
+import logic_core.app.facade.BookmarkFacade;
 import logic_core.app.facade.ConversationFacade;
 import logic_core.app.facade.FollowQueryFacade;
 import logic_core.app.facade.HashtagFacade;
@@ -38,6 +39,7 @@ class RequestDispatcherTypedErrorTest
     private final Gson gson = new GsonBuilder().serializeNulls().create();
 
     private final AuthFacade authFacade = mock(AuthFacade.class);
+    private final BookmarkFacade bookmarkFacade = mock(BookmarkFacade.class);
     private final ConversationFacade conversationFacade = mock(ConversationFacade.class);
     private final FollowQueryFacade followQueryFacade = mock(FollowQueryFacade.class);
     private final HashtagFacade hashtagFacade = mock(HashtagFacade.class);
@@ -52,6 +54,7 @@ class RequestDispatcherTypedErrorTest
     private final RequestDispatcher dispatcher = new RequestDispatcher(
             gson,
             authFacade,
+            bookmarkFacade,
             conversationFacade,
             followQueryFacade,
             hashtagFacade,

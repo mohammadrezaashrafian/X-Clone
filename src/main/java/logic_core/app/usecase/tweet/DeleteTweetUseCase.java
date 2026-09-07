@@ -16,6 +16,7 @@ import logic_core.common.result.Result;
 import logic_core.common.util.TimeProvider;
 import logic_core.domain.model.TweetModel;
 import logic_core.domain.model.UserModel;
+import logic_core.domain.repository.BookmarkRepository;
 import logic_core.domain.repository.MediaRepository;
 import logic_core.domain.repository.MentionRepository;
 import logic_core.domain.repository.RelationshipRepository;
@@ -38,6 +39,7 @@ public class DeleteTweetUseCase
     @NonNull private final RelationshipRepository relationshipRepository;
     @NonNull private final TweetEditRepository tweetEditRepository;
     @NonNull private final MentionRepository mentionRepository;
+    @NonNull private final BookmarkRepository bookmarkRepository;
     @NonNull private final AuthLockOrchestrator lockOrchestrator;
 
     @Transactional
@@ -75,6 +77,7 @@ public class DeleteTweetUseCase
             relationshipRepository.deleteLikesByTweetId(tweet.getId());
             tweetEditRepository.deleteByTweetId(tweet.getId());
             mentionRepository.deleteByTweetId(tweet.getId());
+            bookmarkRepository.deleteByTweetId(tweet.getId());
 
             TweetModel deletedTweet =
                     tweetRepository.findById(tweet.getId())
