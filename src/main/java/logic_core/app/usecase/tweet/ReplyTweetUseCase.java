@@ -10,6 +10,7 @@ import logic_core.app.mapper.TweetMapper;
 import logic_core.app.mapper.UserSummaryResponseMapper;
 import logic_core.app.security.AuthLockOrchestrator;
 import logic_core.app.service.HashtagApplicationService;
+import logic_core.app.service.MentionApplicationService;
 import logic_core.app.service.NotificationApplicationService;
 import logic_core.app.security.SessionUserContext;
 import logic_core.common.exception.*;
@@ -46,6 +47,7 @@ public class ReplyTweetUseCase
     @NonNull private final RelationshipRepository relationshipRepository;
     @NonNull private final NotificationApplicationService notificationService;
     @NonNull private final HashtagApplicationService hashtagService;
+    @NonNull private final MentionApplicationService mentionService;
 
 
     @Transactional
@@ -132,6 +134,11 @@ public class ReplyTweetUseCase
             }
 
             hashtagService.processTweetHashtags(
+                    savedReply.getContent(),
+                    savedReply.getId()
+            );
+
+            mentionService.processTweetMentions(
                     savedReply.getContent(),
                     savedReply.getId()
             );
