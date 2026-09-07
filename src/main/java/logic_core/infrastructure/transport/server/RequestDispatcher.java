@@ -35,6 +35,7 @@ public class RequestDispatcher
     private final MediaFacade mediaFacade;
     private final MessageFacade messageFacade;
     private final NotificationFacade notificationFacade;
+    private final PollFacade pollFacade;
     private final RelationFacade relationFacade;
     private final TimelineFacade timelineFacade;
     private final TweetFacade tweetFacade;
@@ -166,6 +167,12 @@ public class RequestDispatcher
                  USER_GET_IS_BOOKMARKED ->
 
                     dispatchBookmark(request);
+
+            // ---------------- POLL ----------------
+
+            case POLL_VOTE ->
+
+                    dispatchPoll(request);
         };
     }
 
@@ -584,6 +591,26 @@ public class RequestDispatcher
 
                         default -> throw new IllegalArgumentException(
                                 "Unsupported bookmark request: " + request.type());
+                    };
+                });
+    }
+
+    public ResponseEnvelope dispatchPoll(RequestEnvelope request)
+    {
+        return execute(
+                request,
+                pollFacade,
+                (facade, payload) ->
+                {
+                    UUID requestId = request.requestId();
+
+                    return switch (request.type())
+                    {
+                        case POLL_VOTE ->
+                                handleVotePoll(requestId, payload, facade);
+
+                        default -> throw new IllegalArgumentException(
+                                "Unsupported poll request: " + request.type());
                     };
                 });
     }
@@ -2304,6 +2331,33 @@ public class RequestDispatcher
         );
     }
 
+    private ResponseEnvelope handleVotePoll(
+            UUID requestId,
+            JsonElement payload,
+            PollFacade facade)
+    {
+        VotePollRequest request =
+                gson.fromJson(payload, VotePollRequest.class);
+
+        Result<PollResponse> result = facade.vote(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.POLL_VOTE_RESPONSE,
+                    "POLL_VOTE_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.POLL_VOTE_RESPONSE,
+                result.getData()
+        );
+    }
+
     private ResponseType responseTypeFor(RequestType requestType)
     {
         return switch (requestType)
@@ -2352,6 +2406,7 @@ public class RequestDispatcher
             case TWEET_UNBOOKMARK -> ResponseType.TWEET_UNBOOKMARK_RESPONSE;
             case BOOKMARKS_GET -> ResponseType.BOOKMARKS_GET_RESPONSE;
             case USER_GET_IS_BOOKMARKED -> ResponseType.USER_GET_IS_BOOKMARKED_RESPONSE;
+            case POLL_VOTE -> ResponseType.POLL_VOTE_RESPONSE;
             case USER_GET_PROFILE -> ResponseType.USER_GET_PROFILE_RESPONSE;
             case USER_SEARCH -> ResponseType.USER_SEARCH_RESPONSE;
             case USER_UPDATE_PROFILE -> ResponseType.USER_UPDATE_PROFILE_RESPONSE;

@@ -1,8 +1,11 @@
 package logic_core.infrastructure.repository;
 
+import logic_core.app.dto.response.PollResponse;
 import logic_core.app.dto.timeline.TimelineTweet;
+import logic_core.app.mapper.PollMapper;
 import logic_core.domain.model.BookmarkRelation;
 import logic_core.domain.repository.BookmarkRepository;
+import logic_core.domain.repository.PollRepository;
 import logic_core.infrastructure.mapper.BookmarkEntityMapper;
 import logic_core.infrastructure.persistence.entity.bookmark.BookmarkEntity;
 import logic_core.infrastructure.persistence.entity.bookmark.BookmarkEntityId;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,15 +26,18 @@ public class BookmarkRepositoryAdapter implements BookmarkRepository
     private final BookmarkJpaRepository bookmarkJpaRepository;
     private final UserJpaRepository userJpaRepository;
     private final TweetJpaRepository tweetJpaRepository;
+    private final PollRepository pollRepository;
 
     public BookmarkRepositoryAdapter(
             BookmarkJpaRepository bookmarkJpaRepository,
             UserJpaRepository userJpaRepository,
-            TweetJpaRepository tweetJpaRepository)
+            TweetJpaRepository tweetJpaRepository,
+            PollRepository pollRepository)
     {
         this.bookmarkJpaRepository = bookmarkJpaRepository;
         this.userJpaRepository = userJpaRepository;
         this.tweetJpaRepository = tweetJpaRepository;
+        this.pollRepository = pollRepository;
     }
 
     @Override
@@ -78,11 +85,12 @@ public class BookmarkRepositoryAdapter implements BookmarkRepository
     {
         int page = limit > 0 ? offset / limit : 0;
 
-        return bookmarkJpaRepository
-                .findBookmarksForUser(userId, PageRequest.of(page, limit))
-                .stream()
-                .map(BookmarkRepositoryAdapter::toTimelineTweet)
-                .toList();
+        return toTimelineTweets(
+                bookmarkJpaRepository.findBookmarksForUser(
+                        userId,
+                        PageRequest.of(page, limit)
+                )
+        );
     }
 
     @Override
@@ -91,7 +99,33 @@ public class BookmarkRepositoryAdapter implements BookmarkRepository
         return bookmarkJpaRepository.countBookmarksForUser(userId);
     }
 
-    private static TimelineTweet toTimelineTweet(TimelineTweetProjection p)
+    private List<TimelineTweet> toTimelineTweets(List<TimelineTweetProjection> projections)
+    {
+        if (projections == null || projections.isEmpty())
+        {
+            return List.of();
+        }
+
+        List<UUID> tweetIds = projections.stream()
+                .map(TimelineTweetProjection::tweetId)
+                .toList();
+
+        Map<UUID, PollResponse> pollsByTweet =
+                PollMapper.toResponsesByTweet(
+                        pollRepository.findByTweetIds(tweetIds)
+                );
+
+        return projections.stream()
+                .map(p -> toTimelineTweet(
+                        p,
+                        pollsByTweet.get(p.tweetId())
+                ))
+                .toList();
+    }
+
+    private static TimelineTweet toTimelineTweet(
+            TimelineTweetProjection p,
+            PollResponse poll)
     {
         return TimelineTweet.builder()
                 .tweetId(p.tweetId())
@@ -106,6 +140,7 @@ public class BookmarkRepositoryAdapter implements BookmarkRepository
                 .isLiked(false)
                 .publishedAt(p.publishedAt())
                 .media(List.of())
+                .poll(poll)
                 .build();
     }
 }

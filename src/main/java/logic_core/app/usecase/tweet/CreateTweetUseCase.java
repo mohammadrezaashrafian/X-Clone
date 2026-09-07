@@ -3,6 +3,7 @@ package logic_core.app.usecase.tweet;
 import jakarta.transaction.Transactional;
 import logic_core.app.dto.request.CreateTweetRequest;
 import logic_core.app.dto.response.MediaResponse;
+import logic_core.app.dto.response.PollResponse;
 import logic_core.app.dto.response.TweetResponse;
 import logic_core.app.dto.response.UserSummaryResponse;
 import logic_core.app.dto.validator.TweetValidator;
@@ -13,6 +14,7 @@ import logic_core.app.security.SessionUserContext;
 import logic_core.app.service.HashtagApplicationService;
 import logic_core.app.service.MentionApplicationService;
 import logic_core.app.service.NotificationApplicationService;
+import logic_core.app.service.PollApplicationService;
 import logic_core.common.exception.ConflictException;
 import logic_core.common.exception.ForbiddenException;
 import logic_core.common.exception.NotFoundException;
@@ -50,6 +52,7 @@ public class CreateTweetUseCase
     @NonNull private final NotificationApplicationService notificationService;
     @NonNull private final HashtagApplicationService hashtagService;
     @NonNull private final MentionApplicationService mentionService;
+    @NonNull private final PollApplicationService pollService;
 
     @Transactional
     public Result<TweetResponse> execute(@NonNull CreateTweetRequest request)
@@ -66,9 +69,17 @@ public class CreateTweetUseCase
                     request.replyToId(),
                     request.quoteOfId(),
                     request.mediaUrls(),
-                    false,
+                    request.poll() != null,
                     request.scheduledAt()
             );
+
+            // Validate the poll before any persistence so that an invalid poll
+            // fails atomically (no tweet row is written) with existing
+            // validation/error conventions.
+            if (request.poll() != null)
+            {
+                pollService.validate(request.poll());
+            }
 
             interactionPolicy.validateCreate(
                     request.content(),
@@ -107,6 +118,17 @@ public class CreateTweetUseCase
                     savedTweet.getId()
             );
 
+            PollResponse pollResponse = null;
+            if (request.poll() != null)
+            {
+                // Poll creation happens in the same transaction as tweet
+                // creation (CreateTweetUseCase is @Transactional).
+                pollResponse = pollService.createPoll(
+                        request.poll(),
+                        savedTweet.getId()
+                );
+            }
+
             if (savedTweet.getQuotedTweetId() != null)
             {
                 tweetRepository.findById(savedTweet.getQuotedTweetId())
@@ -120,7 +142,11 @@ public class CreateTweetUseCase
                         );
             }
 
-            TweetResponse response = buildTweetResponse(savedTweet, mediaModels);
+            TweetResponse response = buildTweetResponse(
+                    savedTweet,
+                    mediaModels,
+                    pollResponse
+            );
 
 
 
@@ -160,7 +186,8 @@ public class CreateTweetUseCase
 
     private TweetResponse buildTweetResponse(
             TweetModel tweet,
-            List<MediaModel> mediaModels)
+            List<MediaModel> mediaModels,
+            PollResponse poll)
     {
         UserModel author =
                 userRepository.findById(tweet.getAuthorId())
@@ -184,6 +211,7 @@ public class CreateTweetUseCase
                                             null,
                                             null,
                                             null,
+                                            null,
                                             null
                                     )
                             )
@@ -199,6 +227,7 @@ public class CreateTweetUseCase
                             .map(parent ->
                                     TweetMapper.toResponse(
                                             parent,
+                                            null,
                                             null,
                                             null,
                                             null,
@@ -229,7 +258,8 @@ public class CreateTweetUseCase
                 repliedTweetResponse,
                 null,
                 mediaResponses,
-                quotedTweetResponse
+                quotedTweetResponse,
+                poll
         );
     }
 }

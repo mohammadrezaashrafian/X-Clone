@@ -171,6 +171,7 @@ public class RetweetUseCase
                 null,
                 retweetedTweet,
                 List.of(),
+                null,
                 null
         );
     }
@@ -196,6 +197,7 @@ public class RetweetUseCase
                 null,
                 null,
                 List.of(),
+                null,
                 null
         );
     }

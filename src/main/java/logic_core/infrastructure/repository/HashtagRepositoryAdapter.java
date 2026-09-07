@@ -1,10 +1,13 @@
 package logic_core.infrastructure.repository;
 
+import logic_core.app.dto.response.PollResponse;
 import logic_core.app.dto.timeline.TimelineTweet;
+import logic_core.app.mapper.PollMapper;
 import logic_core.domain.model.HashtagFollow;
 import logic_core.domain.model.HashtagModel;
 import logic_core.domain.model.TweetHashtag;
 import logic_core.domain.repository.HashtagRepository;
+import logic_core.domain.repository.PollRepository;
 import logic_core.infrastructure.mapper.HashtagEntityMapper;
 import logic_core.infrastructure.mapper.HashtagFollowEntityMapper;
 import logic_core.infrastructure.mapper.TweetHashtagEntityMapper;
@@ -19,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,19 +35,22 @@ public class HashtagRepositoryAdapter implements HashtagRepository
     private final TweetHashtagJpaRepository tweetHashtagJpaRepository;
     private final UserJpaRepository userJpaRepository;
     private final TweetJpaRepository tweetJpaRepository;
+    private final PollRepository pollRepository;
 
     public HashtagRepositoryAdapter(
             HashtagJpaRepository hashtagJpaRepository,
             HashtagFollowJpaRepository hashtagFollowJpaRepository,
             TweetHashtagJpaRepository tweetHashtagJpaRepository,
             UserJpaRepository userJpaRepository,
-            TweetJpaRepository tweetJpaRepository)
+            TweetJpaRepository tweetJpaRepository,
+            PollRepository pollRepository)
     {
         this.hashtagJpaRepository = hashtagJpaRepository;
         this.hashtagFollowJpaRepository = hashtagFollowJpaRepository;
         this.tweetHashtagJpaRepository = tweetHashtagJpaRepository;
         this.userJpaRepository = userJpaRepository;
         this.tweetJpaRepository = tweetJpaRepository;
+        this.pollRepository = pollRepository;
     }
 
     @Override
@@ -145,15 +152,13 @@ public class HashtagRepositoryAdapter implements HashtagRepository
     {
         int page = limit > 0 ? offset / limit : 0;
 
-        return tweetHashtagJpaRepository
-                .findTweetsByHashtag(
+        return toTimelineTweets(
+                tweetHashtagJpaRepository.findTweetsByHashtag(
                         actorId,
                         hashtagId,
                         PageRequest.of(page, limit)
                 )
-                .stream()
-                .map(HashtagRepositoryAdapter::toTimelineTweet)
-                .toList();
+        );
     }
 
     @Override
@@ -162,7 +167,33 @@ public class HashtagRepositoryAdapter implements HashtagRepository
         return tweetHashtagJpaRepository.countTweetsByHashtag(actorId, hashtagId);
     }
 
-    private static TimelineTweet toTimelineTweet(TimelineTweetProjection p)
+    private List<TimelineTweet> toTimelineTweets(List<TimelineTweetProjection> projections)
+    {
+        if (projections == null || projections.isEmpty())
+        {
+            return List.of();
+        }
+
+        List<UUID> tweetIds = projections.stream()
+                .map(TimelineTweetProjection::tweetId)
+                .toList();
+
+        Map<UUID, PollResponse> pollsByTweet =
+                PollMapper.toResponsesByTweet(
+                        pollRepository.findByTweetIds(tweetIds)
+                );
+
+        return projections.stream()
+                .map(p -> toTimelineTweet(
+                        p,
+                        pollsByTweet.get(p.tweetId())
+                ))
+                .toList();
+    }
+
+    private static TimelineTweet toTimelineTweet(
+            TimelineTweetProjection p,
+            PollResponse poll)
     {
         return TimelineTweet.builder()
                 .tweetId(p.tweetId())
@@ -177,6 +208,7 @@ public class HashtagRepositoryAdapter implements HashtagRepository
                 .isLiked(false)
                 .publishedAt(p.publishedAt())
                 .media(List.of())
+                .poll(poll)
                 .build();
     }
 }

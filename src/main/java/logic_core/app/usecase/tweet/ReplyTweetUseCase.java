@@ -232,6 +232,7 @@ public class ReplyTweetUseCase
                 repliedTo,
                 null,
                 media,
+                null,
                 null
         );
     }
@@ -250,6 +251,7 @@ public class ReplyTweetUseCase
 
         return TweetMapper.toResponse(
                 enriched,
+                null,
                 null,
                 null,
                 null,

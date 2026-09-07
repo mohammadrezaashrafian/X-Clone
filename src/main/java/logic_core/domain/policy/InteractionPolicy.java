@@ -165,6 +165,20 @@ public class InteractionPolicy
         validateBlockBarrier(userId, tweetAuthorId);
     }
 
+    /**
+     * Validates that a user may vote in a poll attached to another user's
+     * tweet. Voting is an interaction with the poll owner's content, so it
+     * applies the same base interaction barrier as liking (active users, block
+     * barrier). Expiry and duplicate-vote checks are the caller's concern.
+     */
+    public void validatePollVote(UUID userId, UUID tweetAuthorId)
+    {
+        requireNonNullId(userId, "userId");
+        requireNonNullId(tweetAuthorId, "tweetAuthorId");
+
+        validateBaseInteraction(userId, tweetAuthorId);
+    }
+
     public void validateUnlike(UUID userId, UUID tweetId, UUID tweetAuthorId)
     {
         requireNonNullId(userId, "userId");

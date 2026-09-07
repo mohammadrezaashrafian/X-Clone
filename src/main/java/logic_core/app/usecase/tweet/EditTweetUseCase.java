@@ -3,8 +3,10 @@ package logic_core.app.usecase.tweet;
 import jakarta.transaction.Transactional;
 import logic_core.app.dto.request.EditTweetRequest;
 import logic_core.app.dto.response.MediaResponse;
+import logic_core.app.dto.response.PollResponse;
 import logic_core.app.dto.response.TweetResponse;
 import logic_core.app.dto.response.UserSummaryResponse;
+import logic_core.app.mapper.PollMapper;
 import logic_core.app.dto.validator.TweetValidator;
 import logic_core.app.mapper.TweetMapper;
 import logic_core.app.mapper.UserSummaryResponseMapper;
@@ -36,6 +38,7 @@ public class EditTweetUseCase
     @NonNull private final AuthLockOrchestrator lockOrchestrator;
     @NonNull private final MediaRepository mediaRepository;
     @NonNull private final RelationshipRepository relationshipRepository;
+    @NonNull private final PollRepository pollRepository;
 
     @Transactional
     public Result<TweetResponse> execute(EditTweetRequest request)
@@ -135,13 +138,18 @@ public class EditTweetUseCase
 
         TweetModel enrichedTweet = enrichWithCounts(tweet);
 
+        PollResponse poll = pollRepository.findByTweetId(tweet.getId())
+                .map(PollMapper::toResponse)
+                .orElse(null);
+
         return TweetMapper.toResponse(
                 enrichedTweet,
                 authorSummary,
                 repliedTweetResponse,
                 retweetedTweetResponse,
                 mediaResponses,
-                quotedTweetResponse
+                quotedTweetResponse,
+                poll
         );
     }
 
@@ -162,6 +170,7 @@ public class EditTweetUseCase
     {
         return TweetMapper.toResponse(
                 enrichWithCounts(tweet),
+                null,
                 null,
                 null,
                 null,

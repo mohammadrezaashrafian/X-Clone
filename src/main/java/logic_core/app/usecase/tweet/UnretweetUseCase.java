@@ -2,8 +2,10 @@ package logic_core.app.usecase.tweet;
 
 import jakarta.transaction.Transactional;
 import logic_core.app.dto.request.UnretweetRequest;
+import logic_core.app.dto.response.PollResponse;
 import logic_core.app.dto.response.TweetResponse;
 import logic_core.app.dto.response.UserSummaryResponse;
+import logic_core.app.mapper.PollMapper;
 import logic_core.app.mapper.TweetMapper;
 import logic_core.app.mapper.UserSummaryResponseMapper;
 import logic_core.app.security.AuthLockOrchestrator;
@@ -14,6 +16,7 @@ import logic_core.common.result.Result;
 import logic_core.domain.model.TweetModel;
 import logic_core.domain.model.UserModel;
 import logic_core.domain.policy.InteractionPolicy;
+import logic_core.domain.repository.PollRepository;
 import logic_core.domain.repository.RelationshipRepository;
 import logic_core.domain.repository.TweetRepository;
 import logic_core.domain.repository.UserRepository;
@@ -41,6 +44,7 @@ public class UnretweetUseCase
     @NonNull private final TweetRepository tweetRepository;
     @NonNull private final UserRepository userRepository;
     @NonNull private final RelationshipRepository relationshipRepository;
+    @NonNull private final PollRepository pollRepository;
     @NonNull private final AuthLockOrchestrator lockOrchestrator;
 
     @Transactional
@@ -132,13 +136,18 @@ public class UnretweetUseCase
                         )
                         .build();
 
+        PollResponse poll = pollRepository.findByTweetId(originalTweet.getId())
+                .map(PollMapper::toResponse)
+                .orElse(null);
+
         return TweetMapper.toResponse(
                 enrichedTweet,
                 authorSummary,
                 null,
                 null,
                 null,
-                null
+                null,
+                poll
         );
     }
 }

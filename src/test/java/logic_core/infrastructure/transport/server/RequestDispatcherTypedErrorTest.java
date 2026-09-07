@@ -11,6 +11,7 @@ import logic_core.app.facade.HashtagFacade;
 import logic_core.app.facade.MediaFacade;
 import logic_core.app.facade.MessageFacade;
 import logic_core.app.facade.NotificationFacade;
+import logic_core.app.facade.PollFacade;
 import logic_core.app.facade.RelationFacade;
 import logic_core.app.facade.TimelineFacade;
 import logic_core.app.facade.TweetFacade;
@@ -46,6 +47,7 @@ class RequestDispatcherTypedErrorTest
     private final MediaFacade mediaFacade = mock(MediaFacade.class);
     private final MessageFacade messageFacade = mock(MessageFacade.class);
     private final NotificationFacade notificationFacade = mock(NotificationFacade.class);
+    private final PollFacade pollFacade = mock(PollFacade.class);
     private final RelationFacade relationFacade = mock(RelationFacade.class);
     private final TimelineFacade timelineFacade = mock(TimelineFacade.class);
     private final TweetFacade tweetFacade = mock(TweetFacade.class);
@@ -61,6 +63,7 @@ class RequestDispatcherTypedErrorTest
             mediaFacade,
             messageFacade,
             notificationFacade,
+            pollFacade,
             relationFacade,
             timelineFacade,
             tweetFacade,
