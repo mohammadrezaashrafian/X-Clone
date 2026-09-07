@@ -2,6 +2,8 @@ package logic_core.infrastructure.transport.http;
 
 import com.google.gson.Gson;
 import logic_core.app.dto.request.GetProfileRequest;
+import logic_core.app.dto.request.GetTweetRequest;
+import logic_core.app.dto.request.LikeTweetRequest;
 import logic_core.app.dto.request.RegisterRequest;
 import logic_core.app.dto.response.AuthResponse;
 import logic_core.app.dto.response.ProfileInfoResponse;
@@ -102,11 +104,11 @@ class HttpTransportControllerIntegrationTest {
     // ========================================================================
 
     @Test
-    void malformedJson_returnsFailureEnvelope() throws Exception {
+    void malformedJson_returns400MalformedJson() throws Exception {
         MockHttpServletResponse response =
-                sendPost("/api", "this is not json", MediaType.APPLICATION_JSON);
+                sendRawPost("/api", "this is not json", MediaType.APPLICATION_JSON);
 
-        assertThat(response.getStatus()).isEqualTo(200);
+        assertThat(response.getStatus()).isEqualTo(400);
         assertThat(response.getContentType())
                 .as("response must be JSON")
                 .contains(MediaType.APPLICATION_JSON_VALUE);
@@ -188,15 +190,90 @@ class HttpTransportControllerIntegrationTest {
     }
 
     @Test
-    void unknownRequestType_returnsMalformedJsonFailure() throws Exception {
+    void unknownRequestType_returns400UnknownRequest() throws Exception {
         MockHttpServletResponse response =
-                sendPost("/api", "{\"type\":\"NOT_A_REAL_TYPE\",\"payload\":{}}", MediaType.APPLICATION_JSON);
-        assertThat(response.getStatus()).isEqualTo(200);
+                sendRawPost("/api", "{\"type\":\"NOT_A_REAL_TYPE\",\"payload\":{}}", MediaType.APPLICATION_JSON);
+        assertThat(response.getStatus()).isEqualTo(400);
+
+        ResponseEnvelope envelope = gson.fromJson(response.getContentAsString(), ResponseEnvelope.class);
+        assertThat(envelope).isNotNull();
+        assertThat(envelope.isSuccess()).isFalse();
+        assertThat(envelope.type()).isEqualTo("UNKNOWN_REQUEST");
+        assertThat(envelope.errorCode()).isEqualTo("UNKNOWN_REQUEST");
+    }
+
+    @Test
+    void emptyBody_returns400FailureEnvelope() throws Exception {
+        MockHttpServletResponse response =
+                sendRawPost("/api", "", MediaType.APPLICATION_JSON);
+
+        assertThat(response.getStatus()).isEqualTo(400);
 
         ResponseEnvelope envelope = gson.fromJson(response.getContentAsString(), ResponseEnvelope.class);
         assertThat(envelope).isNotNull();
         assertThat(envelope.isSuccess()).isFalse();
         assertThat(envelope.errorCode()).isEqualTo("MALFORMED_JSON");
+    }
+
+    @Test
+    void unsupportedMediaType_returns415FailureEnvelope() throws Exception {
+        MockHttpServletResponse response =
+                sendRawPost("/api", "not json", MediaType.TEXT_PLAIN);
+
+        assertThat(response.getStatus()).isEqualTo(415);
+
+        ResponseEnvelope envelope = gson.fromJson(response.getContentAsString(), ResponseEnvelope.class);
+        assertThat(envelope).isNotNull();
+        assertThat(envelope.isSuccess()).isFalse();
+        assertThat(envelope.errorCode()).isEqualTo("UNSUPPORTED_MEDIA_TYPE");
+    }
+
+    @Test
+    void businessFailure_remainsHttp200() throws Exception {
+        AuthResponse auth = registerUser("httpc");
+
+        // TWEET_GET on a nonexistent tweet is a Result-based business failure;
+        // it must keep the route-specific code and HTTP 200.
+        GetTweetRequest tweetRequest =
+                new GetTweetRequest(UUID.randomUUID(), auth.token());
+
+        RequestEnvelope request = new RequestEnvelope(
+                UUID.randomUUID(),
+                RequestType.TWEET_GET,
+                gson.toJsonTree(tweetRequest),
+                null
+        );
+
+        MockHttpServletResponse response = sendPost("/api", gson.toJson(request), MediaType.APPLICATION_JSON);
+        assertThat(response.getStatus()).isEqualTo(200);
+
+        ResponseEnvelope envelope = gson.fromJson(response.getContentAsString(), ResponseEnvelope.class);
+        assertThat(envelope).isNotNull();
+        assertThat(envelope.isSuccess()).isFalse();
+        assertThat(envelope.type()).isEqualTo("TWEET_GET_RESPONSE");
+        assertThat(envelope.errorCode()).isEqualTo("TWEET_GET_FAILED");
+    }
+
+    @Test
+    void unexpectedPayload_returns500UnexpectedError() throws Exception {
+        AuthResponse auth = registerUser("httpd");
+
+        // A valid envelope whose payload cannot be deserialized into the target
+        // DTO is currently an UNEXPECTED_ERROR in the dispatcher; it must map to
+        // HTTP 500, not to MALFORMED_JSON.
+        String body = "{\"requestId\":\"" + UUID.randomUUID()
+                + "\",\"type\":\"TWEET_LIKE\",\"payload\":{"
+                + "\"tweetId\":\"not-a-uuid\",\"sessionToken\":\"" + auth.token()
+                + "\"}}";
+
+        MockHttpServletResponse response =
+                sendRawPost("/api", body, MediaType.APPLICATION_JSON);
+        assertThat(response.getStatus()).isEqualTo(500);
+
+        ResponseEnvelope envelope = gson.fromJson(response.getContentAsString(), ResponseEnvelope.class);
+        assertThat(envelope).isNotNull();
+        assertThat(envelope.isSuccess()).isFalse();
+        assertThat(envelope.errorCode()).isEqualTo("UNEXPECTED_ERROR");
     }
 
     // ========================================================================
@@ -208,6 +285,14 @@ class HttpTransportControllerIntegrationTest {
                         .contentType(contentType)
                         .content(body))
                 .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+    }
+
+    private MockHttpServletResponse sendRawPost(String path, String body, MediaType contentType) throws Exception {
+        return mockMvc.perform(post(path)
+                        .contentType(contentType)
+                        .content(body))
                 .andReturn()
                 .getResponse();
     }

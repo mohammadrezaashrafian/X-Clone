@@ -20,9 +20,11 @@ public class TweetFacade
     private final CreateTweetUseCase createTweetUseCase;
     private final DeleteTweetUseCase deleteTweetUseCase;
     private final EditTweetUseCase editTweetUseCase;
+    private final GetTweetUseCase getTweetUseCase;
     private final LikeTweetUseCase likeTweetUseCase;
     private final ReplyTweetUseCase replyTweetUseCase;
     private final RetweetUseCase retweetUseCase;
+    private final UnretweetUseCase unretweetUseCase;
     private final UnlikeTweetUseCase unlikeTweetUseCase;
     private final GetRepliesUseCase getRepliesUseCase;
 
@@ -41,6 +43,11 @@ public class TweetFacade
         return editTweetUseCase.execute(request);
     }
 
+    public Result<TimelineTweet> getTweet(GetTweetRequest request)
+    {
+        return getTweetUseCase.execute(request);
+    }
+
     public Result<LikeResponse> likeTweet(LikeTweetRequest request)
     {
         return likeTweetUseCase.execute(request);
@@ -54,6 +61,11 @@ public class TweetFacade
     public Result<TweetResponse> retweet(RetweetRequest request)
     {
         return retweetUseCase.execute(request);
+    }
+
+    public Result<TweetResponse> unretweet(UnretweetRequest request)
+    {
+        return unretweetUseCase.execute(request);
     }
 
     public Result<LikeResponse> unlikeTweet(UnlikeTweetRequest request)

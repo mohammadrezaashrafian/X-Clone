@@ -3,9 +3,12 @@ package Testing;
 import Client.ClientApplicationContext;
 import Client.Service.AuthClientService;
 import Client.Service.TimelineClientService;
+import Client.Service.TweetClientService;
 import Client.config.ServerConfig;
 import logic_core.app.dto.request.GetTimelineResponse;
 import logic_core.app.dto.response.AuthResponse;
+import logic_core.app.dto.response.TweetResponse;
+import logic_core.app.dto.timeline.TimelineTweet;
 import logic_core.common.result.Result;
 import logic_core.domain.repository.TimelineType;
 import org.junit.jupiter.api.AfterAll;
@@ -59,6 +62,7 @@ class ClientServerLiveSmokeTest {
     }
 
     private final List<UUID> createdUserIds = new ArrayList<>();
+    private final List<UUID> createdTweetIds = new ArrayList<>();
 
     private JdbcTemplate liveDb() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
@@ -71,21 +75,33 @@ class ClientServerLiveSmokeTest {
 
     @AfterEach
     void cleanUpCreatedRows() {
-        if (createdUserIds.isEmpty()) {
-            return;
-        }
         try {
-            StringBuilder placeholders = new StringBuilder();
-            for (int i = 0; i < createdUserIds.size(); i++) {
-                if (i > 0) {
-                    placeholders.append(",");
-                }
-                placeholders.append("?");
-            }
-            Object[] userArgs = createdUserIds.toArray();
             JdbcTemplate jdbc = liveDb();
-            jdbc.update("DELETE FROM sessions WHERE user_id IN (" + placeholders + ")", userArgs);
-            jdbc.update("DELETE FROM users WHERE id IN (" + placeholders + ")", userArgs);
+
+            if (!createdTweetIds.isEmpty()) {
+                StringBuilder tweetPlaceholders = new StringBuilder();
+                for (int i = 0; i < createdTweetIds.size(); i++) {
+                    if (i > 0) {
+                        tweetPlaceholders.append(",");
+                    }
+                    tweetPlaceholders.append("?");
+                }
+                jdbc.update("DELETE FROM tweets WHERE id IN (" + tweetPlaceholders + ")",
+                        createdTweetIds.toArray());
+            }
+
+            if (!createdUserIds.isEmpty()) {
+                StringBuilder placeholders = new StringBuilder();
+                for (int i = 0; i < createdUserIds.size(); i++) {
+                    if (i > 0) {
+                        placeholders.append(",");
+                    }
+                    placeholders.append("?");
+                }
+                Object[] userArgs = createdUserIds.toArray();
+                jdbc.update("DELETE FROM sessions WHERE user_id IN (" + placeholders + ")", userArgs);
+                jdbc.update("DELETE FROM users WHERE id IN (" + placeholders + ")", userArgs);
+            }
         } catch (Exception e) {
             System.err.println("ClientServerLiveSmokeTest cleanup warning: " + e.getMessage());
         }
@@ -166,6 +182,30 @@ class ClientServerLiveSmokeTest {
                         "HOME timeline must succeed — error=" + home.getError());
                 assertNotNull(home.getData(), "HOME timeline response must be present");
                 assertNotNull(home.getData().tweets(), "HOME timeline tweets must parse to a list");
+
+                // 5. Create a tweet and retrieve it via TWEET_GET (TweetClientService.getTweet)
+                TweetClientService tweets = new TweetClientService(loginContext);
+                Result<TweetResponse> created =
+                        tweets.createTweet(
+                                "single-tweet retrieval smoke " + UUID.randomUUID(),
+                                null,
+                                null,
+                                null,
+                                null
+                        ).get(10, TimeUnit.SECONDS);
+                assertTrue(created.isSuccess(),
+                        "createTweet must succeed — error=" + created.getError());
+                assertNotNull(created.getData(), "createTweet must return a TweetResponse");
+                createdTweetIds.add(created.getData().id());
+
+                Result<TimelineTweet> single =
+                        tweets.getTweet(created.getData().id())
+                                .get(10, TimeUnit.SECONDS);
+                assertTrue(single.isSuccess(),
+                        "getTweet must succeed — error=" + single.getError());
+                assertNotNull(single.getData(), "getTweet must return a TimelineTweet");
+                assertEquals(created.getData().id(), single.getData().tweetId(),
+                        "getTweet must return the requested tweet id");
             }
         }
     }

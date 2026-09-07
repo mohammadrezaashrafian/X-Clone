@@ -117,6 +117,18 @@ public interface TweetRepository
      */
     boolean isRetweetedByUser(UUID tweetId, UUID userId);
 
+    /**
+     * Removes the user's active retweet marker row for the original tweet.
+     * Hard-deletes only the marker row belonging to {@code userId} for
+     * {@code tweetId}; never touches the original tweet or other users'
+     * retweets. Retweet counts are derived from active retweet rows, so
+     * removing the row is the count update.
+     *
+     * @return number of rows actually removed (0 when the user has no active
+     *         retweet for that tweet)
+     */
+    int deleteActiveRetweetByUser(UUID tweetId, UUID userId);
+
     // -------------------------------------------------------------------------
     // Counts (optional but useful for TweetModel counter sync / responses)
     // -------------------------------------------------------------------------
@@ -140,6 +152,18 @@ public interface TweetRepository
      * Used by the TWEET_GET_REPLIES transport route.
      */
     List<TimelineTweet> getRepliesOfTweet(UUID actorId, UUID tweetId);
+
+    /**
+     * Loads one active (non-deleted) tweet in timeline shape (author info +
+     * interaction counts) for the given actor, mirroring the timeline/replies
+     * visibility semantics: the tweet is only returned when no block relation
+     * exists between {@code actorId} and the tweet author in either direction.
+     * Used by the TWEET_GET transport route.
+     *
+     * @return empty when the tweet does not exist, is soft-deleted, or is not
+     *         visible to the actor due to a block relation in either direction
+     */
+    Optional<TimelineTweet> findSingleTweet(UUID actorId, UUID tweetId);
 
     Optional<TweetModel> findActiveByIdForUpdate(UUID tweetId);
 }

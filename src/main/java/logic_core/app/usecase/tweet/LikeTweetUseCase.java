@@ -5,10 +5,12 @@ import logic_core.app.dto.request.LikeTweetRequest;
 import logic_core.app.dto.response.LikeResponse;
 import logic_core.app.security.AuthLockOrchestrator;
 import logic_core.app.security.SessionUserContext;
+import logic_core.app.service.NotificationApplicationService;
 import logic_core.common.exception.*;
 import logic_core.common.result.Result;
 import logic_core.domain.model.LikeRelation;
 import logic_core.domain.model.TweetModel;
+import logic_core.domain.model.notification.NotificationType;
 import logic_core.domain.policy.InteractionPolicy;
 import logic_core.domain.repository.RelationshipRepository;
 import logic_core.domain.repository.TweetRepository;
@@ -26,6 +28,7 @@ public class LikeTweetUseCase
     @NonNull private final TweetRepository tweetRepository;
     @NonNull private final RelationshipRepository relationshipRepository;
     @NonNull private final AuthLockOrchestrator lockOrchestrator;
+    @NonNull private final NotificationApplicationService notificationService;
 
     @Transactional
     public Result<LikeResponse> execute(LikeTweetRequest request)
@@ -67,6 +70,13 @@ public class LikeTweetUseCase
             else
             {
                 relationshipRepository.saveLike(LikeRelation.create(tweet.getId(), currentUserId));
+
+                notificationService.notify(
+                        tweet.getAuthorId(),
+                        currentUserId,
+                        tweet.getId(),
+                        NotificationType.LIKE
+                );
 
                 long totalLikesCount = relationshipRepository.countLikesByTweetId(tweet.getId());
 

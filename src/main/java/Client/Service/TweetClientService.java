@@ -111,6 +111,18 @@ public final class TweetClientService
         );
     }
 
+    public CompletableFuture<Result<TweetResponse>> unretweet(
+            UUID tweetId)
+    {
+        UnretweetRequest request = new UnretweetRequest(tweetId, session.getToken());
+
+        return execute(
+                RequestType.TWEET_UNRETWEET,
+                request,
+                TweetResponse.class
+        );
+    }
+
     public CompletableFuture<Result<LikeResponse>> likeTweet(
             UUID tweetId)
     {
@@ -141,6 +153,17 @@ public final class TweetClientService
 
         return executeList(
                 RequestType.TWEET_GET_REPLIES,
+                request,
+                TimelineTweet.class
+        );
+    }
+
+    public CompletableFuture<Result<TimelineTweet>> getTweet(UUID tweetId)
+    {
+        GetTweetRequest request = new GetTweetRequest(tweetId, session.getToken());
+
+        return execute(
+                RequestType.TWEET_GET,
                 request,
                 TimelineTweet.class
         );

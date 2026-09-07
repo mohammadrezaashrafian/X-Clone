@@ -6,16 +6,20 @@ import com.google.gson.JsonElement;
 import logic_core.app.dto.request.CreateTweetRequest;
 import logic_core.app.dto.request.DeleteMediaRequest;
 import logic_core.app.dto.request.DownloadMediaRequest;
+import logic_core.app.dto.request.GetProfileRequest;
 import logic_core.app.dto.request.GetTimelineRequest;
+import logic_core.app.dto.request.LoginRequest;
 import logic_core.app.dto.request.RegisterRequest;
 import logic_core.app.dto.response.AuthResponse;
 import logic_core.app.dto.response.DownloadMediaResponse;
+import logic_core.app.dto.response.ProfileInfoResponse;
 import logic_core.app.dto.response.TweetResponse;
 import logic_core.domain.repository.TimelineType;
 import logic_core.infrastructure.transport.RequestEnvelope;
 import logic_core.infrastructure.transport.RequestType;
 import logic_core.infrastructure.transport.ResponseEnvelope;
 import logic_core.infrastructure.transport.server.ServerMain;
+import logic_core.session.SessionManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -75,6 +79,9 @@ class SecurityAuthorizationIntegrationTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private SessionManager sessionManager;
 
     private final List<UUID> createdUserIds = new ArrayList<>();
     private final List<UUID> createdTweetIds = new ArrayList<>();
@@ -161,12 +168,22 @@ class SecurityAuthorizationIntegrationTest {
         AuthResponse userA = registerUser("secd");
         TweetResponse tweetA = createTweet(userA, "timeline-anon-1");
 
-        // No sessionToken at all: must be rejected even with a valid actorId.
-        ResponseEnvelope envelope = sendTimeline(TimelineType.HOME, userA.userId(), null, null);
+        // No sessionToken at all: the HTTP layer must reject the request with 401
+        // Unauthorized even when a valid actorId is supplied (no spoofing).
+        ResponseEnvelope envelope = sendUnauthorized(
+                new RequestEnvelope(
+                        UUID.randomUUID(),
+                        RequestType.TIMELINE_GET,
+                        gson.toJsonTree(new GetTimelineRequest(
+                                TimelineType.HOME, userA.userId(), null, 0, 20, null)),
+                        null
+                )
+        );
         assertThat(envelope.isSuccess())
                 .as("unauthenticated timeline request must fail — error=%s",
                         envelope.errorMessage())
                 .isFalse();
+        assertThat(envelope.errorCode()).isEqualTo("AUTH_REQUIRED");
     }
 
     // ========================================================================
@@ -192,11 +209,19 @@ class SecurityAuthorizationIntegrationTest {
         TweetResponse tweet = createTweet(userA, "media-anon-1", "https://example.com/media/anon.jpg");
 
         UUID mediaId = tweet.media().get(0).mediaId();
-        ResponseEnvelope envelope = sendDownload(mediaId, null);
+        ResponseEnvelope envelope = sendUnauthorized(
+                new RequestEnvelope(
+                        UUID.randomUUID(),
+                        RequestType.MEDIA_DOWNLOAD,
+                        gson.toJsonTree(new DownloadMediaRequest(mediaId, null)),
+                        null
+                )
+        );
         assertThat(envelope.isSuccess())
                 .as("unauthenticated media download must fail — error=%s",
                         envelope.errorMessage())
                 .isFalse();
+        assertThat(envelope.errorCode()).isEqualTo("AUTH_REQUIRED");
     }
 
     @Test
@@ -213,6 +238,104 @@ class SecurityAuthorizationIntegrationTest {
 
         DownloadMediaResponse media = gson.fromJson(envelope.getData(), DownloadMediaResponse.class);
         assertThat(media.id()).isEqualTo(mediaId);
+    }
+
+    // ========================================================================
+    // HTTP-layer authentication
+    // ========================================================================
+
+    @Test
+    void httpAuth_validSession_reachesProtectedOperation() throws Exception {
+        AuthResponse auth = registerUser("secj");
+
+        ResponseEnvelope envelope = send(new RequestEnvelope(
+                UUID.randomUUID(),
+                RequestType.USER_GET_PROFILE,
+                gson.toJsonTree(new GetProfileRequest(auth.token(), auth.userId())),
+                null
+        ));
+        assertSuccess(envelope, "authenticated profile request");
+
+        ProfileInfoResponse profile = gson.fromJson(envelope.getData(), ProfileInfoResponse.class);
+        assertThat(profile.userId()).isEqualTo(auth.userId());
+    }
+
+    @Test
+    void httpAuth_missingCredentials_rejectedWith401() throws Exception {
+        AuthResponse auth = registerUser("seck");
+
+        // A caller-supplied userId is present but no session credentials are: the
+        // HTTP layer must reject the request with 401 before any business logic.
+        ResponseEnvelope envelope = sendUnauthorized(new RequestEnvelope(
+                UUID.randomUUID(),
+                RequestType.USER_GET_PROFILE,
+                gson.toJsonTree(new GetProfileRequest(null, auth.userId())),
+                null
+        ));
+        assertThat(envelope.isSuccess()).isFalse();
+        assertThat(envelope.errorCode()).isEqualTo("AUTH_REQUIRED");
+    }
+
+    @Test
+    void httpAuth_invalidToken_rejectedWith401() throws Exception {
+        AuthResponse auth = registerUser("secl");
+
+        ResponseEnvelope envelope = sendUnauthorized(new RequestEnvelope(
+                UUID.randomUUID(),
+                RequestType.USER_GET_PROFILE,
+                gson.toJsonTree(new GetProfileRequest(
+                        UUID.randomUUID().toString(), auth.userId())),
+                null
+        ));
+        assertThat(envelope.isSuccess()).isFalse();
+        assertThat(envelope.errorCode()).isEqualTo("UNAUTHORIZED");
+    }
+
+    @Test
+    void httpAuth_revokedSession_rejectedWith401() throws Exception {
+        AuthResponse auth = registerUser("secm");
+
+        // Revoke the session (logout semantics), then confirm the same token is no
+        // longer accepted by the HTTP transport.
+        sessionManager.invalidateSessionByToken(auth.token());
+
+        ResponseEnvelope envelope = sendUnauthorized(new RequestEnvelope(
+                UUID.randomUUID(),
+                RequestType.USER_GET_PROFILE,
+                gson.toJsonTree(new GetProfileRequest(auth.token(), auth.userId())),
+                null
+        ));
+        assertThat(envelope.isSuccess()).isFalse();
+        assertThat(envelope.errorCode()).isEqualTo("UNAUTHORIZED");
+    }
+
+    @Test
+    void httpAuth_anonymousRegisterAndLogin_doNotRequireCredentials() throws Exception {
+        String username = "secn_" + UUID.randomUUID().toString().substring(0, 8);
+        String password = "StrongPassword123!";
+
+        RegisterRequest registerRequest =
+                new RegisterRequest(username, username + "@authtest.com", password, "Display secn");
+        ResponseEnvelope registerEnvelope = send(new RequestEnvelope(
+                UUID.randomUUID(),
+                RequestType.AUTH_REGISTER,
+                gson.toJsonTree(registerRequest),
+                null
+        ));
+        assertSuccess(registerEnvelope, "anonymous register");
+        AuthResponse registered = gson.fromJson(registerEnvelope.getData(), AuthResponse.class);
+        createdUserIds.add(registered.userId());
+
+        LoginRequest loginRequest = new LoginRequest(username, password);
+        ResponseEnvelope loginEnvelope = send(new RequestEnvelope(
+                UUID.randomUUID(),
+                RequestType.AUTH_LOGIN,
+                gson.toJsonTree(loginRequest),
+                null
+        ));
+        assertSuccess(loginEnvelope, "anonymous login");
+        AuthResponse login = gson.fromJson(loginEnvelope.getData(), AuthResponse.class);
+        assertThat(login.token()).isNotBlank();
     }
 
     // ========================================================================
@@ -301,6 +424,19 @@ class SecurityAuthorizationIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(gson.toJson(request)))
                 .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+
+        ResponseEnvelope envelope = gson.fromJson(response.getContentAsString(), ResponseEnvelope.class);
+        assertThat(envelope).isNotNull();
+        return envelope;
+    }
+
+    private ResponseEnvelope sendUnauthorized(RequestEnvelope request) throws Exception {
+        MockHttpServletResponse response = mockMvc.perform(post("/api")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(gson.toJson(request)))
+                .andExpect(status().isUnauthorized())
                 .andReturn()
                 .getResponse();
 

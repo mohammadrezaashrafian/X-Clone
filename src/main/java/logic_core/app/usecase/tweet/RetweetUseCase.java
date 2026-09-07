@@ -8,12 +8,14 @@ import logic_core.app.mapper.TweetMapper;
 import logic_core.app.mapper.UserSummaryResponseMapper;
 import logic_core.app.security.AuthLockOrchestrator;
 import logic_core.app.security.SessionUserContext;
+import logic_core.app.service.NotificationApplicationService;
 import logic_core.common.exception.AppException;
 import logic_core.common.exception.DatabaseException;
 import logic_core.common.exception.NotFoundException;
 import logic_core.common.result.Result;
 import logic_core.common.util.TimeProvider;
 import logic_core.domain.model.TweetModel;
+import logic_core.domain.model.notification.NotificationType;
 import logic_core.domain.policy.InteractionPolicy;
 import logic_core.domain.repository.RelationshipRepository;
 import logic_core.domain.repository.TweetRepository;
@@ -47,6 +49,9 @@ public class RetweetUseCase
 
     @NonNull
     private final AuthLockOrchestrator lockOrchestrator;
+
+    @NonNull
+    private final NotificationApplicationService notificationService;
 
 
     @Transactional
@@ -112,6 +117,13 @@ public class RetweetUseCase
                             .build();
 
             tweetRepository.update(updatedOriginal);
+
+            notificationService.notify(
+                    originalTweet.getAuthorId(),
+                    currentUserId,
+                    originalTweet.getId(),
+                    NotificationType.RETWEET
+            );
 
 
             return Result.success(

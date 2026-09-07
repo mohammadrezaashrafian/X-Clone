@@ -1,0 +1,36 @@
+# Test-scoped configuration.
+#
+# NOTE: this file lives on the test classpath ahead of src/main/resources, so it
+# SHADOWS the main application.yml entirely — Spring Boot loads a single
+# application.yml from the classpath root. It therefore mirrors the main
+# datasource configuration (the same local PostgreSQL `xclonedb` database) and
+# additionally caps the Hikari pool.
+#
+# Why the cap: every @SpringBootTest / @DataJpaTest context boots its own Hikari
+# connection pool against the shared local database, and Spring caches those
+# contexts (and their pools) for the whole surefire JVM. With Hikari's default
+# maximum-pool-size (10, eagerly opened via minimum-idle), a full-suite run
+# exceeds the local PostgreSQL max_connections limit ("sorry, too many clients
+# already"). The application under test only needs a handful of connections at
+# a time (Flyway + Hibernate + per-request work), so 3 is ample; requests
+# contend briefly instead of failing.
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/xclonedb
+    username: postgres
+    password: FinalProject_Dev
+    hikari:
+      minimum-idle: 1
+      maximum-pool-size: 3
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true

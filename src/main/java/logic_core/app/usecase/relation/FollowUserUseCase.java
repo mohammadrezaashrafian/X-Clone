@@ -7,10 +7,12 @@ import logic_core.app.dto.validator.FollowValidator;
 import logic_core.app.mapper.FollowMapper;
 import logic_core.app.security.AuthLockOrchestrator;
 import logic_core.app.security.SessionUserContext;
+import logic_core.app.service.NotificationApplicationService;
 import logic_core.common.exception.*;
 import logic_core.common.result.Result;
 import logic_core.common.util.TimeProvider;
 import logic_core.domain.model.FollowRelation;
+import logic_core.domain.model.notification.NotificationType;
 import logic_core.domain.policy.FollowPolicy;
 import logic_core.domain.repository.RelationshipRepository;
 import lombok.NonNull;
@@ -28,6 +30,7 @@ public class FollowUserUseCase
     @NonNull private final RelationshipRepository relationshipRepository;
     @NonNull private final TimeProvider timeProvider;
     @NonNull private final AuthLockOrchestrator lockOrchestrator;
+    @NonNull private final NotificationApplicationService notificationService;
 
     @Transactional
     public Result<FollowResponse> execute(FollowUserRequest request)
@@ -56,6 +59,13 @@ public class FollowUserUseCase
                     timeProvider.now()
             );
             relationshipRepository.saveFollow(followRelation);
+
+            notificationService.notify(
+                    followingId,
+                    followerId,
+                    null,
+                    NotificationType.FOLLOW
+            );
 
             long followersCount = relationshipRepository.countFollowers(followingId);
 

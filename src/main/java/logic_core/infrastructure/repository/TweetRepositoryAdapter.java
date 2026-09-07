@@ -149,6 +149,11 @@ public class TweetRepositoryAdapter implements TweetRepository {
     }
 
     @Override
+    public int deleteActiveRetweetByUser(UUID tweetId, UUID userId) {
+        return tweetJpaRepository.deleteActiveRetweetByUser(tweetId, userId);
+    }
+
+    @Override
     public long countRepliesByTweetId(UUID tweetId) {
         return tweetJpaRepository.countByReplyToIdAndIsDeletedFalse(tweetId);
     }
@@ -205,6 +210,13 @@ public class TweetRepositoryAdapter implements TweetRepository {
                 .stream()
                 .map(TweetRepositoryAdapter::toTimelineTweet)
                 .toList();
+    }
+
+    @Override
+    public Optional<TimelineTweet> findSingleTweet(UUID actorId, UUID tweetId) {
+        return tweetJpaRepository
+                .findSingleTweetForActor(actorId, tweetId)
+                .map(TweetRepositoryAdapter::toTimelineTweet);
     }
 
     @Override

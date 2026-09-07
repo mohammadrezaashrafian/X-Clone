@@ -175,6 +175,22 @@ public class InteractionPolicy
         }
     }
 
+    /**
+     * Validates that a user may remove their own retweet of {@code tweetId}.
+     * Performs the same base interaction barrier as {@link #validateRetweet}
+     * (active users, block barrier) without the create-only duplicate and
+     * self-retweet rules. Whether the user actually owns an active retweet is
+     * decided by the atomic delete operation, not by a check-then-delete race.
+     */
+    public void validateUnretweet(UUID userId, UUID tweetAuthorId, UUID tweetId)
+    {
+        requireNonNullId(userId, "userId");
+        requireNonNullId(tweetAuthorId, "tweetAuthorId");
+        requireNonNullId(tweetId, "tweetId");
+
+        validateBaseInteraction(userId, tweetAuthorId);
+    }
+
     private void validateBaseInteraction(UUID userId, UUID tweetAuthorId)
     {
         UserModel user = userRepository.findById(userId)

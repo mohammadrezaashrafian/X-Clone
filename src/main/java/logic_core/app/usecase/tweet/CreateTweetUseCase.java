@@ -10,6 +10,7 @@ import logic_core.app.mapper.TweetMapper;
 import logic_core.app.mapper.UserSummaryResponseMapper;
 import logic_core.app.security.AuthLockOrchestrator;
 import logic_core.app.security.SessionUserContext;
+import logic_core.app.service.NotificationApplicationService;
 import logic_core.common.exception.ConflictException;
 import logic_core.common.exception.ForbiddenException;
 import logic_core.common.exception.NotFoundException;
@@ -19,6 +20,7 @@ import logic_core.common.util.TimeProvider;
 import logic_core.domain.model.MediaModel;
 import logic_core.domain.model.TweetModel;
 import logic_core.domain.model.UserModel;
+import logic_core.domain.model.notification.NotificationType;
 import logic_core.domain.policy.InteractionPolicy;
 import logic_core.domain.repository.MediaRepository;
 import logic_core.domain.repository.TweetRepository;
@@ -43,6 +45,7 @@ public class CreateTweetUseCase
     @NonNull private final TimeProvider timeProvider;
     @NonNull private final AuthLockOrchestrator lockOrchestrator;
     @NonNull private final MediaRepository mediaRepository;
+    @NonNull private final NotificationApplicationService notificationService;
 
     @Transactional
     public Result<TweetResponse> execute(@NonNull CreateTweetRequest request)
@@ -89,6 +92,19 @@ public class CreateTweetUseCase
                             savedTweet.getId(),
                             request.mediaUrls()
                     );
+
+            if (savedTweet.getQuotedTweetId() != null)
+            {
+                tweetRepository.findById(savedTweet.getQuotedTweetId())
+                        .ifPresent(quoted ->
+                                notificationService.notify(
+                                        quoted.getAuthorId(),
+                                        currentUserId,
+                                        quoted.getId(),
+                                        NotificationType.QUOTE
+                                )
+                        );
+            }
 
             TweetResponse response = buildTweetResponse(savedTweet, mediaModels);
 
