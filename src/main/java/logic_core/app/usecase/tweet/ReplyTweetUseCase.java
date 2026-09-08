@@ -136,7 +136,8 @@ public class ReplyTweetUseCase
 
             mentionService.processTweetMentions(
                     savedReply.getContent(),
-                    savedReply.getId()
+                    savedReply.getId(),
+                    currentUserId
             );
 
 

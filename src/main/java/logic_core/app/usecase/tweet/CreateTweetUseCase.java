@@ -115,7 +115,8 @@ public class CreateTweetUseCase
 
             mentionService.processTweetMentions(
                     savedTweet.getContent(),
-                    savedTweet.getId()
+                    savedTweet.getId(),
+                    currentUserId
             );
 
             PollResponse pollResponse = null;

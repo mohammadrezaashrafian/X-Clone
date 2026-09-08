@@ -148,7 +148,8 @@ public class RequestDispatcher
 
             case NOTIFICATION_GET,
                  NOTIFICATION_READ,
-                 NOTIFICATION_READ_ALL ->
+                 NOTIFICATION_READ_ALL,
+                 NOTIFICATION_GET_UNREAD_COUNT ->
 
                     dispatchNotification(request);
 
@@ -537,6 +538,9 @@ public class RequestDispatcher
 
                         case NOTIFICATION_READ_ALL ->
                                 handleReadAllNotifications(requestId, payload, facade);
+
+                        case NOTIFICATION_GET_UNREAD_COUNT ->
+                                handleCountUnreadNotifications(requestId, payload, facade);
 
                         default -> throw new IllegalArgumentException(
                                 "Unsupported notification request: " + request.type());
@@ -1538,7 +1542,7 @@ public class RequestDispatcher
         GetNotificationsRequest request =
                 gson.fromJson(payload, GetNotificationsRequest.class);
 
-        Result<List<NotificationResponse>> result =
+        Result<GetNotificationsPageResponse> result =
                 facade.getNotifications(request);
 
         if (result.isFailure())
@@ -1610,6 +1614,34 @@ public class RequestDispatcher
         return successResponse(
                 requestId,
                 ResponseType.NOTIFICATION_READ_ALL_RESPONSE,
+                result.getData()
+        );
+    }
+
+    private ResponseEnvelope handleCountUnreadNotifications(
+            UUID requestId,
+            JsonElement payload,
+            NotificationFacade facade)
+    {
+        CountUnreadNotificationsRequest request =
+                gson.fromJson(payload, CountUnreadNotificationsRequest.class);
+
+        Result<UnreadNotificationsCountResponse> result =
+                facade.countUnreadNotifications(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.NOTIFICATION_GET_UNREAD_COUNT_RESPONSE,
+                    "NOTIFICATION_GET_UNREAD_COUNT_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.NOTIFICATION_GET_UNREAD_COUNT_RESPONSE,
                 result.getData()
         );
     }
@@ -2434,6 +2466,7 @@ public class RequestDispatcher
             case NOTIFICATION_GET -> ResponseType.NOTIFICATION_GET_RESPONSE;
             case NOTIFICATION_READ -> ResponseType.NOTIFICATION_READ_RESPONSE;
             case NOTIFICATION_READ_ALL -> ResponseType.NOTIFICATION_READ_ALL_RESPONSE;
+            case NOTIFICATION_GET_UNREAD_COUNT -> ResponseType.NOTIFICATION_GET_UNREAD_COUNT_RESPONSE;
             case HASHTAG_FOLLOW -> ResponseType.HASHTAG_FOLLOW_RESPONSE;
             case HASHTAG_UNFOLLOW -> ResponseType.HASHTAG_UNFOLLOW_RESPONSE;
             case HASHTAG_GET_TWEETS -> ResponseType.HASHTAG_GET_TWEETS_RESPONSE;

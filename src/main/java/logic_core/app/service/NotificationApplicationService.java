@@ -53,4 +53,25 @@ public class NotificationApplicationService
 
         notificationRepository.save(notification);
     }
+
+    /**
+     * Retracts the notification previously generated for an interaction
+     * (V2.1 #7): undoing a like / follow / retweet removes the corresponding
+     * notification instead of leaving a ghost for the recipient. A null
+     * {@code tweetId} targets tweet-less types (FOLLOW). No-op when nothing
+     * matches.
+     */
+    public void retractInteraction(
+            UUID recipientId,
+            UUID actorId,
+            NotificationType type,
+            UUID tweetId)
+    {
+        if (recipientId == null || actorId == null || type == null)
+        {
+            return;
+        }
+
+        notificationRepository.deleteInteraction(recipientId, actorId, type, tweetId);
+    }
 }

@@ -311,16 +311,25 @@ class DatabaseConstraintIntegrationTest {
                 actor.userId(),
                 tweet.id());
 
-        // MENTION is outside the application contract and must be rejected by
-        // the CHECK constraint (no mention feature exists yet).
-        assertThatThrownBy(() -> jdbcTemplate.update(
+        // MENTION joined the application contract in V2.1 #7 (V4 migration
+        // extended notifications_type_check), so it must persist.
+        jdbcTemplate.update(
                 "INSERT INTO notifications (id, created_at, recipient_id, actor_id, tweet_id, type) "
                         + "VALUES (?, now(), ?, ?, ?, 'MENTION')",
                 UUID.randomUUID(),
                 author.userId(),
                 actor.userId(),
+                tweet.id());
+
+        // Types outside the application contract are still rejected.
+        assertThatThrownBy(() -> jdbcTemplate.update(
+                "INSERT INTO notifications (id, created_at, recipient_id, actor_id, tweet_id, type) "
+                        + "VALUES (?, now(), ?, ?, ?, 'LEGACY_SUPERSET_TYPE')",
+                UUID.randomUUID(),
+                author.userId(),
+                actor.userId(),
                 tweet.id()))
-                .as("notifications_type_check must reject the legacy MENTION superset type")
+                .as("notifications_type_check must reject types outside the application contract")
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 

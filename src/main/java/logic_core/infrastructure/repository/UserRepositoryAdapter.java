@@ -126,4 +126,14 @@ public class UserRepositoryAdapter implements UserRepository {
                 .map(UserEntityMapper::toModel)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<UserModel> findByIds(List<UUID> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return List.of();
+        }
+        return userJpaRepository.findAllById(userIds).stream()
+                .map(UserEntityMapper::toModel)
+                .collect(Collectors.toList());
+    }
 }

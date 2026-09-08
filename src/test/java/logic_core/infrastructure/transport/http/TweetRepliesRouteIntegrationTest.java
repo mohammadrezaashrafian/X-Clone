@@ -18,6 +18,7 @@ import logic_core.app.dto.request.RetweetRequest;
 import logic_core.app.dto.request.UnlikeTweetRequest;
 import logic_core.app.dto.request.UnretweetRequest;
 import logic_core.app.dto.response.AuthResponse;
+import logic_core.app.dto.response.GetNotificationsPageResponse;
 import logic_core.app.dto.response.NotificationResponse;
 import logic_core.app.dto.response.TweetResponse;
 import logic_core.app.dto.timeline.TimelineTweet;
@@ -531,7 +532,7 @@ class TweetRepliesRouteIntegrationTest {
     }
 
     @Test
-    void notifications_unlike_doesNotCreateAdditionalNotification() throws Exception {
+    void notifications_unlike_removesLikeNotification() throws Exception {
         AuthResponse author = registerUser("ntfc");
         AuthResponse liker = registerUser("ntfd");
 
@@ -539,10 +540,10 @@ class TweetRepliesRouteIntegrationTest {
         like(liker, tweet.id());
         unlike(liker, tweet.id());
 
-        // The original like notification remains; unlike adds none.
+        // V2.1 #7: undoing the like retracts the LIKE notification it had
+        // generated (previously it remained as a ghost); unlike adds none.
         List<NotificationResponse> notifications = getNotifications(author.token());
-        assertThat(notifications).hasSize(1);
-        assertThat(notifications.get(0).type()).isEqualTo(NotificationType.LIKE);
+        assertThat(notifications).isEmpty();
     }
 
     @Test
@@ -877,9 +878,9 @@ class TweetRepliesRouteIntegrationTest {
                 null));
         assertSuccess(envelope, "GET notifications");
 
-        return gson.fromJson(
-                envelope.getData(),
-                TypeToken.getParameterized(List.class, NotificationResponse.class).getType());
+        // V2.1 #7: NOTIFICATION_GET now returns a paginated page wrapper.
+        return gson.fromJson(envelope.getData(), GetNotificationsPageResponse.class)
+                .notifications();
     }
 
     private NotificationResponse readNotification(String token, UUID notificationId) throws Exception {

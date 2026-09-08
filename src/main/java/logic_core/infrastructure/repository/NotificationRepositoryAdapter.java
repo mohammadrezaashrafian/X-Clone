@@ -1,11 +1,15 @@
 package logic_core.infrastructure.repository;
 
 import logic_core.domain.model.NotificationModel;
+import logic_core.domain.model.notification.NotificationType;
 import logic_core.domain.repository.NotificationRepository;
 import logic_core.infrastructure.mapper.NotificationEntityMapper;
 import logic_core.infrastructure.persistence.entity.notification.NotificationEntity;
 import logic_core.infrastructure.persistence.entity.tweet.TweetEntity;
 import logic_core.infrastructure.persistence.entity.UserEntity;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -85,5 +89,37 @@ public class NotificationRepositoryAdapter implements NotificationRepository
     public int markAsRead(UUID id)
     {
         return notificationJpaRepository.markAsRead(id);
+    }
+
+    @Override
+    public List<NotificationModel> findPageByRecipientId(UUID recipientId, int page, int pageSize)
+    {
+        Pageable pageable = PageRequest.of(
+                Math.max(page, 0),
+                Math.max(Math.min(pageSize, 100), 1),
+                Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        return notificationJpaRepository.findPageByRecipient(recipientId, pageable)
+                .stream()
+                .map(NotificationEntityMapper::toModel)
+                .toList();
+    }
+
+    @Override
+    public long countByRecipientId(UUID recipientId)
+    {
+        return notificationJpaRepository.countByRecipientId(recipientId);
+    }
+
+    @Override
+    public long countUnreadByRecipientId(UUID recipientId)
+    {
+        return notificationJpaRepository.countByRecipientIdAndIsReadFalse(recipientId);
+    }
+
+    @Override
+    public int deleteInteraction(UUID recipientId, UUID actorId, NotificationType type, UUID tweetId)
+    {
+        return notificationJpaRepository.deleteInteraction(recipientId, actorId, type, tweetId);
     }
 }

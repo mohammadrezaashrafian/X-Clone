@@ -6,6 +6,7 @@ import logic_core.app.dto.response.PollResponse;
 import logic_core.app.dto.response.TweetResponse;
 import logic_core.app.dto.response.UserSummaryResponse;
 import logic_core.app.mapper.PollMapper;
+import logic_core.app.service.NotificationApplicationService;
 import logic_core.app.mapper.TweetMapper;
 import logic_core.app.mapper.UserSummaryResponseMapper;
 import logic_core.app.security.AuthLockOrchestrator;
@@ -15,6 +16,7 @@ import logic_core.common.exception.NotFoundException;
 import logic_core.common.result.Result;
 import logic_core.domain.model.TweetModel;
 import logic_core.domain.model.UserModel;
+import logic_core.domain.model.notification.NotificationType;
 import logic_core.domain.policy.InteractionPolicy;
 import logic_core.domain.repository.PollRepository;
 import logic_core.domain.repository.RelationshipRepository;
@@ -45,6 +47,7 @@ public class UnretweetUseCase
     @NonNull private final UserRepository userRepository;
     @NonNull private final RelationshipRepository relationshipRepository;
     @NonNull private final PollRepository pollRepository;
+    @NonNull private final NotificationApplicationService notificationService;
     @NonNull private final AuthLockOrchestrator lockOrchestrator;
 
     @Transactional
@@ -90,6 +93,16 @@ public class UnretweetUseCase
             {
                 return Result.failure("You have not retweeted this tweet.");
             }
+
+            // V2.1 #7: undoing the retweet also removes the RETWEET
+            // notification it generated, so the recipient is not left with a
+            // ghost.
+            notificationService.retractInteraction(
+                    originalTweet.getAuthorId(),
+                    currentUserId,
+                    NotificationType.RETWEET,
+                    originalTweet.getId()
+            );
 
             TweetResponse response =
                     buildResponse(originalTweet);
