@@ -76,7 +76,8 @@ public enum ResponseType
     FOLLOW_GET_FOLLOWINGS_RESPONSE,
 
     MEDIA_DOWNLOAD_RESPONSE,
-    MEDIA_DELETE_RESPONSE;
+    MEDIA_DELETE_RESPONSE,
+    MEDIA_UPLOAD_RESPONSE;
 
 
     public static ResponseType fromWire(String value)

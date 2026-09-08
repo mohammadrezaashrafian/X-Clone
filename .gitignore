@@ -36,4 +36,8 @@ build/
 .vscode/
 
 ### Mac OS ###
-.DS_Store.freebuff/
+.DS_Store
+
+### Local runtime data ###
+.freebuff/
+data/

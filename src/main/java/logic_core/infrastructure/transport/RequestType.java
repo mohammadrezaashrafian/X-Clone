@@ -74,7 +74,8 @@ public enum RequestType
     FOLLOW_GET_FOLLOWERS,
 
     MEDIA_DELETE,
-    MEDIA_DOWNLOAD;
+    MEDIA_DOWNLOAD,
+    MEDIA_UPLOAD;
 
     public static RequestType fromWire(String value)
     {

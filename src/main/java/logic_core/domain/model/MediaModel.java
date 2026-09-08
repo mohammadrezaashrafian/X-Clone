@@ -19,6 +19,12 @@ public class MediaModel
     private MediaType mediaType;
     private short displayOrder;
 
+    /**
+     * Owner of an uploaded-but-not-yet-attached media record. Null for
+     * attached media created through the legacy URL-based flow.
+     */
+    private UUID uploadedBy;
+
     public boolean isImage()
     {
         return mediaType == MediaType.IMAGE;
@@ -27,6 +33,11 @@ public class MediaModel
     public boolean isVideo()
     {
         return mediaType == MediaType.VIDEO;
+    }
+
+    public boolean isGif()
+    {
+        return mediaType == MediaType.GIF;
     }
 
     public boolean isAttachedToTweet()
@@ -47,6 +58,11 @@ public class MediaModel
     public boolean hasValidFileSize()
     {
         return fileSizeBytes != null && fileSizeBytes >= 0;
+    }
+
+    public boolean isOwnedBy(UUID userId)
+    {
+        return uploadedBy != null && uploadedBy.equals(userId);
     }
 
     public void attachToTweet(UUID tweetId)
@@ -79,4 +95,4 @@ public class MediaModel
         }
         this.mediaUrl = mediaUrl;
     }
-}
+}

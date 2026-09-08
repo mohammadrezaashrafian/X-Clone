@@ -135,7 +135,8 @@ public class RequestDispatcher
             // ------------- MEDIA   --------------
 
             case MEDIA_DELETE,
-                 MEDIA_DOWNLOAD ->
+                 MEDIA_DOWNLOAD,
+                 MEDIA_UPLOAD ->
 
                 dispatchMedia(request);
 
@@ -470,6 +471,9 @@ public class RequestDispatcher
 
                         case MEDIA_DELETE ->
                                 handleDeleteMedia(requestId, payload, facade);
+
+                        case MEDIA_UPLOAD ->
+                                handleUploadMedia(requestId, payload, facade);
 
                         default ->
                                 throw new IllegalArgumentException(
@@ -2136,6 +2140,37 @@ public class RequestDispatcher
         );
     }
 
+    private ResponseEnvelope handleUploadMedia(
+            UUID requestId,
+            JsonElement payload,
+            MediaFacade facade)
+    {
+        UploadMediaRequest request =
+                gson.fromJson(
+                        payload,
+                        UploadMediaRequest.class
+                );
+
+        Result<UploadMediaResponse> result =
+                facade.uploadMedia(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.MEDIA_UPLOAD_RESPONSE,
+                    "UPLOAD_MEDIA_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.MEDIA_UPLOAD_RESPONSE,
+                result.getData()
+        );
+    }
+
     //===============================================================
     //                     DISPATCH HASHTAG
     //===============================================================
@@ -2421,6 +2456,7 @@ public class RequestDispatcher
             case FOLLOW_GET_FOLLOWERS -> ResponseType.FOLLOW_GET_FOLLOWERS_RESPONSE;
             case MEDIA_DELETE -> ResponseType.MEDIA_DELETE_RESPONSE;
             case MEDIA_DOWNLOAD -> ResponseType.MEDIA_DOWNLOAD_RESPONSE;
+            case MEDIA_UPLOAD -> ResponseType.MEDIA_UPLOAD_RESPONSE;
             case USER_GET_IS_FOLLOW -> ResponseType.USER_GET_IS_FOLLOW_RESPONSE;
             case USER_GET_IS_LIKE -> ResponseType.USER_GET_IS_LIKE_RESPONSE;
         };

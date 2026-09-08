@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -101,11 +102,10 @@ public class CreateTweetUseCase
                             );
 
             List<MediaModel> mediaModels =
-                    request.mediaUrls() == null || request.mediaUrls().isEmpty()
-                            ? Collections.emptyList()
-                            : mediaRepository.createMedia(
+                    attachUploadedMedia(
+                            request.mediaUrls(),
                             savedTweet.getId(),
-                            request.mediaUrls()
+                            currentUserId
                     );
 
             hashtagService.processTweetHashtags(
@@ -165,6 +165,91 @@ public class CreateTweetUseCase
         catch (ValidationException | ForbiddenException | ConflictException | NotFoundException e)
         {
             return Result.failure(e.getMessage());
+        }
+    }
+
+    /**
+     * Attaches media referenced by the request to the tweet.
+     *
+     * <p>Tokens that parse as a UUID are treated as uploaded-media ids
+     * (V2.1 #6): the existing media row must exist, belong to the
+     * authenticated actor, and be unattached; the existing row is then
+     * attached rather than duplicated. Tokens that are not UUIDs keep the
+     * legacy URL-based contract and create new media rows via
+     * {@link MediaRepository#createMedia}.
+     */
+    private List<MediaModel> attachUploadedMedia(
+            List<String> uploadTokens,
+            UUID tweetId,
+            UUID actorId)
+    {
+        if (uploadTokens == null || uploadTokens.isEmpty())
+        {
+            return Collections.emptyList();
+        }
+
+        List<MediaModel> attached = new ArrayList<>();
+        List<String> legacyUrls = new ArrayList<>();
+
+        for (String token : uploadTokens)
+        {
+            UUID mediaId = parseMediaId(token);
+            if (mediaId == null)
+            {
+                legacyUrls.add(token);
+                continue;
+            }
+
+            MediaModel media = mediaRepository.findById(mediaId)
+                    .orElseThrow(() -> new NotFoundException(
+                            "Media not found: nonexistent media id " + mediaId));
+
+            if (!media.isOwnedBy(actorId))
+            {
+                throw new ForbiddenException(
+                        "Media ownership violation: media does not belong to the authenticated user");
+            }
+
+            if (media.isAttachedToTweet())
+            {
+                throw new ConflictException(
+                        "Media is already attached to another tweet");
+            }
+
+            if (!mediaRepository.attachToTweet(mediaId, tweetId))
+            {
+                throw new ConflictException(
+                        "Media is already attached to another tweet");
+            }
+
+            // Reflect the attachment on the in-memory model so the response
+            // carries the attached media row (no duplicate row is created).
+            media.attachToTweet(tweetId);
+            attached.add(media);
+        }
+
+        if (!legacyUrls.isEmpty())
+        {
+            attached.addAll(mediaRepository.createMedia(tweetId, legacyUrls));
+        }
+
+        attached.sort(Comparator.comparing(m -> (int) m.getDisplayOrder()));
+        return attached;
+    }
+
+    private static UUID parseMediaId(String token)
+    {
+        if (token == null)
+        {
+            return null;
+        }
+        try
+        {
+            return UUID.fromString(token.trim());
+        }
+        catch (IllegalArgumentException e)
+        {
+            return null;
         }
     }
 

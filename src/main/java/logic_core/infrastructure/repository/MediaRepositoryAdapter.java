@@ -3,10 +3,12 @@ package logic_core.infrastructure.repository;
 import logic_core.domain.model.MediaModel;
 import logic_core.domain.repository.MediaRepository;
 import logic_core.infrastructure.mapper.MediaEntityMapper;
+import logic_core.infrastructure.persistence.entity.UserEntity;
 import logic_core.infrastructure.persistence.entity.media.MediaEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,11 +29,14 @@ public class MediaRepositoryAdapter implements MediaRepository {
 
     private final MediaJpaRepository mediaJpaRepository;
     private final TweetJpaRepository tweetJpaRepository;
+    private final UserJpaRepository userJpaRepository;
 
     public MediaRepositoryAdapter(MediaJpaRepository mediaJpaRepository,
-                                   TweetJpaRepository tweetJpaRepository) {
+                                   TweetJpaRepository tweetJpaRepository,
+                                   UserJpaRepository userJpaRepository) {
         this.mediaJpaRepository = mediaJpaRepository;
         this.tweetJpaRepository = tweetJpaRepository;
+        this.userJpaRepository = userJpaRepository;
     }
 
     /**
@@ -98,6 +103,75 @@ public class MediaRepositoryAdapter implements MediaRepository {
     @Override
     public boolean isAlreadyAttached(UUID mediaId) {
         return mediaJpaRepository.isAlreadyAttached(mediaId);
+    }
+
+    /**
+     * Counts media uploaded by a user that are not yet attached to a tweet.
+     *
+     * @param userId the owning user's ID
+     * @return the number of unattached media records uploaded by the user
+     */
+    @Override
+    public long countUnattachedByUser(UUID userId) {
+        return mediaJpaRepository.countUnattachedByUser(userId);
+    }
+
+    /**
+     * Loads media attached to the given tweets, ordered by tweet and displayOrder.
+     *
+     * @param tweetIds the tweet IDs whose media should be loaded
+     * @return media models grouped per tweet in display order
+     */
+    @Override
+    public List<MediaModel> findByTweetIds(Collection<UUID> tweetIds) {
+        if (tweetIds == null || tweetIds.isEmpty()) {
+            return List.of();
+        }
+        return mediaJpaRepository.findByTweetIds(tweetIds)
+                .stream()
+                .map(MediaEntityMapper::toDomain)
+                .toList();
+    }
+
+    /**
+     * Persists an uploaded media record that is not yet attached to a tweet.
+     *
+     * @param media the unattached media model (must carry {@code uploadedBy})
+     * @return the persisted media model with its generated id
+     */
+    @Override
+    public MediaModel upload(MediaModel media) {
+        if (media == null) {
+            throw new IllegalArgumentException("media must not be null");
+        }
+
+        UserEntity owner = userJpaRepository.getReferenceById(media.getUploadedBy());
+        MediaEntity entity = MediaEntityMapper.toPersistence(media, owner);
+        MediaEntity saved = mediaJpaRepository.saveAndFlush(entity);
+        return MediaEntityMapper.toDomain(saved);
+    }
+
+    /**
+     * Attaches an uploaded media record to a tweet. Returns {@code true} only
+     * when a row was actually attached (i.e. the media existed and was still
+     * unattached); {@code false} otherwise.
+     *
+     * @param mediaId the media record to attach
+     * @param tweetId the tweet to attach it to
+     * @return true when attached, false when nothing matched
+     */
+    @Override
+    public boolean attachToTweet(UUID mediaId, UUID tweetId) {
+        if (mediaId == null || tweetId == null) {
+            return false;
+        }
+        // The bulk update below bypasses the persistence context and executes
+        // immediately against the database. When the tweet was created in the
+        // same transaction its INSERT may still be pending, which would violate
+        // media_tweet_id_fkey — flush pending writes first.
+        tweetJpaRepository.flush();
+        var tweet = tweetJpaRepository.getReferenceById(tweetId);
+        return mediaJpaRepository.attachToTweet(mediaId, tweet) > 0;
     }
 
     /**

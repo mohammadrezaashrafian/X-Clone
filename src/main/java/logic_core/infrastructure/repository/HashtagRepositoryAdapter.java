@@ -1,12 +1,15 @@
 package logic_core.infrastructure.repository;
 
 import logic_core.app.dto.response.PollResponse;
+import logic_core.app.dto.timeline.TimelineMedia;
 import logic_core.app.dto.timeline.TimelineTweet;
 import logic_core.app.mapper.PollMapper;
 import logic_core.domain.model.HashtagFollow;
 import logic_core.domain.model.HashtagModel;
+import logic_core.domain.model.MediaModel;
 import logic_core.domain.model.TweetHashtag;
 import logic_core.domain.repository.HashtagRepository;
+import logic_core.domain.repository.MediaRepository;
 import logic_core.domain.repository.PollRepository;
 import logic_core.infrastructure.mapper.HashtagEntityMapper;
 import logic_core.infrastructure.mapper.HashtagFollowEntityMapper;
@@ -36,6 +39,7 @@ public class HashtagRepositoryAdapter implements HashtagRepository
     private final UserJpaRepository userJpaRepository;
     private final TweetJpaRepository tweetJpaRepository;
     private final PollRepository pollRepository;
+    private final MediaRepository mediaRepository;
 
     public HashtagRepositoryAdapter(
             HashtagJpaRepository hashtagJpaRepository,
@@ -43,7 +47,8 @@ public class HashtagRepositoryAdapter implements HashtagRepository
             TweetHashtagJpaRepository tweetHashtagJpaRepository,
             UserJpaRepository userJpaRepository,
             TweetJpaRepository tweetJpaRepository,
-            PollRepository pollRepository)
+            PollRepository pollRepository,
+            MediaRepository mediaRepository)
     {
         this.hashtagJpaRepository = hashtagJpaRepository;
         this.hashtagFollowJpaRepository = hashtagFollowJpaRepository;
@@ -51,6 +56,7 @@ public class HashtagRepositoryAdapter implements HashtagRepository
         this.userJpaRepository = userJpaRepository;
         this.tweetJpaRepository = tweetJpaRepository;
         this.pollRepository = pollRepository;
+        this.mediaRepository = mediaRepository;
     }
 
     @Override
@@ -183,17 +189,50 @@ public class HashtagRepositoryAdapter implements HashtagRepository
                         pollRepository.findByTweetIds(tweetIds)
                 );
 
+        Map<UUID, List<TimelineMedia>> mediaByTweet =
+                loadMediaByTweet(tweetIds);
+
         return projections.stream()
                 .map(p -> toTimelineTweet(
                         p,
-                        pollsByTweet.get(p.tweetId())
+                        pollsByTweet.get(p.tweetId()),
+                        mediaByTweet.getOrDefault(p.tweetId(), List.of())
                 ))
                 .toList();
     }
 
+    /**
+     * Bulk-loads attached media for the projected tweets in a single query
+     * (no N+1) and groups it per tweet in display order.
+     */
+    private Map<UUID, List<TimelineMedia>> loadMediaByTweet(List<UUID> tweetIds)
+    {
+        Map<UUID, List<TimelineMedia>> mediaByTweet = new java.util.HashMap<>();
+
+        for (MediaModel media : mediaRepository.findByTweetIds(tweetIds))
+        {
+            mediaByTweet
+                    .computeIfAbsent(media.getTweetId(), id -> new java.util.ArrayList<>())
+                    .add(toTimelineMedia(media));
+        }
+
+        return mediaByTweet;
+    }
+
+    private static TimelineMedia toTimelineMedia(MediaModel media)
+    {
+        return TimelineMedia.builder()
+                .mediaId(media.getMediaId())
+                .mediaUrl(media.getMediaUrl())
+                .mediaType(media.getMediaType())
+                .displayOrder(media.getDisplayOrder())
+                .build();
+    }
+
     private static TimelineTweet toTimelineTweet(
             TimelineTweetProjection p,
-            PollResponse poll)
+            PollResponse poll,
+            List<TimelineMedia> media)
     {
         return TimelineTweet.builder()
                 .tweetId(p.tweetId())
@@ -207,7 +246,7 @@ public class HashtagRepositoryAdapter implements HashtagRepository
                 .retweetCount(p.retweetCount())
                 .isLiked(false)
                 .publishedAt(p.publishedAt())
-                .media(List.of())
+                .media(media)
                 .poll(poll)
                 .build();
     }
