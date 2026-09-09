@@ -159,7 +159,8 @@ public class RequestDispatcher
             case HASHTAG_FOLLOW,
                  HASHTAG_UNFOLLOW,
                  HASHTAG_GET_TWEETS,
-                 HASHTAG_SEARCH ->
+                 HASHTAG_SEARCH,
+                 TRENDING_HASHTAGS ->
 
                     dispatchHashtag(request);
 
@@ -574,6 +575,9 @@ public class RequestDispatcher
 
                         case HASHTAG_SEARCH ->
                                 handleSearchHashtags(requestId, payload, facade);
+
+                        case TRENDING_HASHTAGS ->
+                                handleGetTrendingHashtags(requestId, payload, facade);
 
                         default -> throw new IllegalArgumentException(
                                 "Unsupported hashtag request: " + request.type());
@@ -2348,6 +2352,33 @@ public class RequestDispatcher
         );
     }
 
+    private ResponseEnvelope handleGetTrendingHashtags(
+            UUID requestId,
+            JsonElement payload,
+            HashtagFacade facade)
+    {
+        GetTrendingHashtagsRequest request =
+                gson.fromJson(payload, GetTrendingHashtagsRequest.class);
+
+        Result<TrendingHashtagsResponse> result = facade.getTrending(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.TRENDING_HASHTAGS_RESPONSE,
+                    "TRENDING_HASHTAGS_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.TRENDING_HASHTAGS_RESPONSE,
+                result.getData()
+        );
+    }
+
     //===============================================================
     //                     DISPATCH BOOKMARK
     //===============================================================
@@ -2533,6 +2564,7 @@ public class RequestDispatcher
             case HASHTAG_UNFOLLOW -> ResponseType.HASHTAG_UNFOLLOW_RESPONSE;
             case HASHTAG_GET_TWEETS -> ResponseType.HASHTAG_GET_TWEETS_RESPONSE;
             case HASHTAG_SEARCH -> ResponseType.HASHTAG_SEARCH_RESPONSE;
+            case TRENDING_HASHTAGS -> ResponseType.TRENDING_HASHTAGS_RESPONSE;
             case TWEET_BOOKMARK -> ResponseType.TWEET_BOOKMARK_RESPONSE;
             case TWEET_UNBOOKMARK -> ResponseType.TWEET_UNBOOKMARK_RESPONSE;
             case BOOKMARKS_GET -> ResponseType.BOOKMARKS_GET_RESPONSE;

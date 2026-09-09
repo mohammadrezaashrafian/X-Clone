@@ -7,6 +7,7 @@ import logic_core.app.mapper.PollMapper;
 import logic_core.domain.model.HashtagFollow;
 import logic_core.domain.model.HashtagModel;
 import logic_core.domain.model.MediaModel;
+import logic_core.domain.model.TrendingHashtag;
 import logic_core.domain.model.TweetHashtag;
 import logic_core.domain.repository.HashtagRepository;
 import logic_core.domain.repository.MediaRepository;
@@ -19,10 +20,12 @@ import logic_core.infrastructure.persistence.entity.hashtag.HashtagFollowEntity;
 import logic_core.infrastructure.persistence.entity.hashtag.HashtagFollowEntityId;
 import logic_core.infrastructure.persistence.entity.hashtag.TweetHashtagEntity;
 import logic_core.infrastructure.projection.TimelineTweetProjection;
+import logic_core.infrastructure.projection.TrendingHashtagProjection;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -215,6 +218,26 @@ public class HashtagRepositoryAdapter implements HashtagRepository
                 .replace("_", "\\_");
 
         return escaped.toLowerCase(Locale.ROOT) + "%";
+    }
+
+    @Override
+    public List<TrendingHashtag> findTrending(
+            OffsetDateTime windowStart,
+            OffsetDateTime windowEnd,
+            int limit)
+    {
+        return hashtagJpaRepository.findTrending(windowStart, windowEnd, PageRequest.of(0, limit))
+                .stream()
+                .map(projection -> new TrendingHashtag(
+                        projection.tag(),
+                        projection.score()))
+                .toList();
+    }
+
+    @Override
+    public long countTrendingHashtags(OffsetDateTime windowStart, OffsetDateTime windowEnd)
+    {
+        return hashtagJpaRepository.countTrendingHashtags(windowStart, windowEnd);
     }
 
     private List<TimelineTweet> toTimelineTweets(List<TimelineTweetProjection> projections)

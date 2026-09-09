@@ -3,6 +3,7 @@ package logic_core.domain.repository;
 import logic_core.app.dto.timeline.TimelineTweet;
 import logic_core.domain.model.HashtagFollow;
 import logic_core.domain.model.HashtagModel;
+import logic_core.domain.model.TrendingHashtag;
 import logic_core.domain.model.TweetHashtag;
 
 import java.util.Collection;
@@ -92,4 +93,35 @@ public interface HashtagRepository
      * {@link #searchByTagPrefix}.
      */
     long countByTagPrefix(String prefix);
+
+    // -------------------------------------------------------------------------
+    // Trending (TRENDING_HASHTAGS, [V2.1 #9])
+    // -------------------------------------------------------------------------
+
+    /**
+     * Trending hashtags inside the half-open window
+     * {@code [windowStart, windowEnd)} on {@code tweets.published_at}.
+     *
+     * <p>Score = number of distinct qualifying tweets using the hashtag
+     * (soft-deleted tweets, deleted authors and retweet markers excluded).
+     * Database-aggregated; deterministic order {@code score DESC, tag ASC}.
+     *
+     * @param windowStart inclusive window start (inclusive boundary on
+     *                    {@code published_at})
+     * @param windowEnd   exclusive window end
+     * @param limit       maximum number of rows to return (1..50)
+     */
+    List<TrendingHashtag> findTrending(
+            java.time.OffsetDateTime windowStart,
+            java.time.OffsetDateTime windowEnd,
+            int limit);
+
+    /**
+     * Number of distinct hashtags with at least one qualifying relationship
+     * inside the same window as {@link #findTrending} — the {@code totalItems}
+     * of the trending response, taken against the identical window.
+     */
+    long countTrendingHashtags(
+            java.time.OffsetDateTime windowStart,
+            java.time.OffsetDateTime windowEnd);
 }
