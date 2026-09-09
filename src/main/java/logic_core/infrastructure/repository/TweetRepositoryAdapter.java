@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -225,6 +226,43 @@ public class TweetRepositoryAdapter implements TweetRepository {
                             .getOrDefault(tweetId, List.of());
                     return toTimelineTweet(projection, poll, media);
                 });
+    }
+
+    @Override
+    public List<TimelineTweet> searchTweets(UUID actorId, String term, int limit, int offset) {
+        return toTimelineTweets(
+                tweetJpaRepository.searchTweetsForActor(
+                        actorId,
+                        toContentLikePattern(term),
+                        PageRequest.of(offset / limit, limit)
+                )
+        );
+    }
+
+    @Override
+    public long countSearchTweets(UUID actorId, String term) {
+        return tweetJpaRepository.countSearchTweetsForActor(
+                actorId,
+                toContentLikePattern(term)
+        );
+    }
+
+    /**
+     * Builds the lowercase LIKE pattern for tweet-content search, hardening
+     * the raw term for LIKE semantics: backslash, percent and underscore are
+     * escaped with a backslash, matching the ESCAPE '\\' clause in the search
+     * JPQL. The whole term is lowercased to pair with LOWER(t.content) in the
+     * query; the pattern is bound as a parameter (no string concatenation into
+     * the query text).
+     */
+    private static String toContentLikePattern(String term)
+    {
+        String escaped = term
+                .replace("\\", "\\\\")
+                .replace("%", "\\%")
+                .replace("_", "\\_");
+
+        return "%" + escaped.toLowerCase(Locale.ROOT) + "%";
     }
 
     @Override

@@ -166,4 +166,27 @@ public interface TweetRepository
     Optional<TimelineTweet> findSingleTweet(UUID actorId, UUID tweetId);
 
     Optional<TweetModel> findActiveByIdForUpdate(UUID tweetId);
+
+    // -------------------------------------------------------------------------
+    // Search (TWEET_SEARCH)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Page of active, viewer-visible tweets whose content contains the given
+     * term (case-insensitive substring), in timeline shape (author info +
+     * interaction counts). Visibility and lifecycle filters (soft-delete,
+     * author existence, bidirectional blocks, mutes, retweet markers) are
+     * applied by the query itself — no separate authorization layer.
+     *
+     * @param actorId authenticated viewer (never trusted from the payload)
+     * @param term    raw search term; the adapter hardens it into a LIKE pattern
+     * @param limit   page size (1..100)
+     * @param offset  zero-based row offset (page * pageSize)
+     */
+    List<TimelineTweet> searchTweets(UUID actorId, String term, int limit, int offset);
+
+    /**
+     * Count of matching tweets — same filters as {@link #searchTweets}.
+     */
+    long countSearchTweets(UUID actorId, String term);
 }

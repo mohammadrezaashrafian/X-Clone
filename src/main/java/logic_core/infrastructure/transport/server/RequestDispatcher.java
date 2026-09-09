@@ -69,7 +69,8 @@ public class RequestDispatcher
                  TWEET_UNRETWEET,
                  TWEET_LIKE,
                  TWEET_UNLIKE,
-                 TWEET_GET ->
+                 TWEET_GET,
+                 TWEET_SEARCH ->
 
                     dispatchTweet(request);
 
@@ -157,7 +158,8 @@ public class RequestDispatcher
 
             case HASHTAG_FOLLOW,
                  HASHTAG_UNFOLLOW,
-                 HASHTAG_GET_TWEETS ->
+                 HASHTAG_GET_TWEETS,
+                 HASHTAG_SEARCH ->
 
                     dispatchHashtag(request);
 
@@ -382,6 +384,8 @@ public class RequestDispatcher
 
                         case TWEET_GET -> handleGetTweet(requestId, payload, facade);
 
+                        case TWEET_SEARCH -> handleSearchTweets(requestId, payload, facade);
+
                         default -> throw new IllegalArgumentException("Unsupported tweet request: " + request.type());
                     };
                 });
@@ -567,6 +571,9 @@ public class RequestDispatcher
 
                         case HASHTAG_GET_TWEETS ->
                                 handleGetHashtagTweets(requestId, payload, facade);
+
+                        case HASHTAG_SEARCH ->
+                                handleSearchHashtags(requestId, payload, facade);
 
                         default -> throw new IllegalArgumentException(
                                 "Unsupported hashtag request: " + request.type());
@@ -1480,6 +1487,33 @@ public class RequestDispatcher
         );
     }
 
+    private ResponseEnvelope handleSearchTweets(
+            UUID requestId,
+            JsonElement payload,
+            TweetFacade facade)
+    {
+        SearchTweetsRequest request =
+                gson.fromJson(payload, SearchTweetsRequest.class);
+
+        Result<TweetSearchResponse> result = facade.searchTweets(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.TWEET_SEARCH_RESPONSE,
+                    "TWEET_SEARCH_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.TWEET_SEARCH_RESPONSE,
+                result.getData()
+        );
+    }
+
 
     private ResponseEnvelope handleRetweet(
             UUID requestId,
@@ -2287,6 +2321,33 @@ public class RequestDispatcher
         );
     }
 
+    private ResponseEnvelope handleSearchHashtags(
+            UUID requestId,
+            JsonElement payload,
+            HashtagFacade facade)
+    {
+        SearchHashtagsRequest request =
+                gson.fromJson(payload, SearchHashtagsRequest.class);
+
+        Result<HashtagSearchResponse> result = facade.searchHashtags(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.HASHTAG_SEARCH_RESPONSE,
+                    "HASHTAG_SEARCH_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.HASHTAG_SEARCH_RESPONSE,
+                result.getData()
+        );
+    }
+
     //===============================================================
     //                     DISPATCH BOOKMARK
     //===============================================================
@@ -2463,6 +2524,7 @@ public class RequestDispatcher
             case TWEET_UNRETWEET -> ResponseType.TWEET_UNRETWEET_RESPONSE;
             case TWEET_GET -> ResponseType.TWEET_GET_RESPONSE;
             case TWEET_GET_REPLIES -> ResponseType.TWEET_GET_REPLY_RESPONSE;
+            case TWEET_SEARCH -> ResponseType.TWEET_SEARCH_RESPONSE;
             case NOTIFICATION_GET -> ResponseType.NOTIFICATION_GET_RESPONSE;
             case NOTIFICATION_READ -> ResponseType.NOTIFICATION_READ_RESPONSE;
             case NOTIFICATION_READ_ALL -> ResponseType.NOTIFICATION_READ_ALL_RESPONSE;
@@ -2470,6 +2532,7 @@ public class RequestDispatcher
             case HASHTAG_FOLLOW -> ResponseType.HASHTAG_FOLLOW_RESPONSE;
             case HASHTAG_UNFOLLOW -> ResponseType.HASHTAG_UNFOLLOW_RESPONSE;
             case HASHTAG_GET_TWEETS -> ResponseType.HASHTAG_GET_TWEETS_RESPONSE;
+            case HASHTAG_SEARCH -> ResponseType.HASHTAG_SEARCH_RESPONSE;
             case TWEET_BOOKMARK -> ResponseType.TWEET_BOOKMARK_RESPONSE;
             case TWEET_UNBOOKMARK -> ResponseType.TWEET_UNBOOKMARK_RESPONSE;
             case BOOKMARKS_GET -> ResponseType.BOOKMARKS_GET_RESPONSE;

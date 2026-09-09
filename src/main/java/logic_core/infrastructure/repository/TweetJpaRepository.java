@@ -569,6 +569,88 @@ public interface TweetJpaRepository extends JpaRepository<TweetEntity, UUID> {
     );
 
     // =========================================================================
+    // Search (TWEET_SEARCH)
+    // =========================================================================
+
+    /**
+     * Case-insensitive substring search over active tweet content, in timeline
+     * shape (author info + interaction counts). The full visibility/lifecycle
+     * rules are applied inside the query itself, mirroring the home timeline
+     * semantics: the tweet must not be soft-deleted, the author must exist and
+     * not be soft-deleted, no block relation may exist in either direction
+     * between the actor and the author, the author must not be muted by the
+     * actor, and retweet marker rows are excluded. Replies and quotes remain
+     * searchable.
+     *
+     * <p>{@code pattern} is a pre-built lowercase LIKE pattern with the
+     * LIKE wildcards and the escape character already escaped by the adapter
+     * (see {@code TweetRepositoryAdapter#toContentLikePattern}); the ESCAPE
+     * clause below must stay in sync with that escape character.
+     *
+     * <p>Deterministic ordering: {@code publishedAt DESC, id ASC}.
+     */
+    @Query("""
+        SELECT new logic_core.infrastructure.projection.TimelineTweetProjection(
+            t.id, a.id, a.username, a.displayName, a.avatarUrl,
+            t.content,
+            COUNT(DISTINCT l.user),
+            COUNT(DISTINCT r),
+            COUNT(DISTINCT rt),
+            t.publishedAt
+        )
+        FROM TweetEntity t
+        JOIN t.author a
+        LEFT JOIN t.likes l
+        LEFT JOIN t.replies r
+        LEFT JOIN t.retweets rt
+        WHERE t.isDeleted = false
+          AND t.retweetOf IS NULL
+          AND a.isDeleted = false
+          AND LOWER(t.content) LIKE :pattern ESCAPE '\\'
+          AND NOT EXISTS (
+              SELECT 1 FROM BlockEntity b
+              WHERE (b.blocker.id = :actorId AND b.blocked.id = a.id)
+                 OR (b.blocker.id = a.id AND b.blocked.id = :actorId)
+          )
+          AND a.id NOT IN (
+              SELECT m.muted.id FROM MuteEntity m WHERE m.muter.id = :actorId
+          )
+        GROUP BY t.id, a.id, a.username, a.displayName, a.avatarUrl, t.content, t.publishedAt
+        ORDER BY t.publishedAt DESC, t.id ASC
+        """)
+    List<TimelineTweetProjection> searchTweetsForActor(
+            @Param("actorId") UUID actorId,
+            @Param("pattern") String pattern,
+            org.springframework.data.domain.Pageable pageable
+    );
+
+    /**
+     * Count of active tweets matching {@code pattern} that are visible to the
+     * actor — exactly the same filters as {@link #searchTweetsForActor}.
+     */
+    @Query("""
+        SELECT COUNT(t)
+        FROM TweetEntity t
+        JOIN t.author a
+        WHERE t.isDeleted = false
+          AND t.retweetOf IS NULL
+          AND a.isDeleted = false
+          AND LOWER(t.content) LIKE :pattern ESCAPE '\\'
+          AND NOT EXISTS (
+              SELECT 1 FROM BlockEntity b
+              WHERE (b.blocker.id = :actorId AND b.blocked.id = a.id)
+                 OR (b.blocker.id = a.id AND b.blocked.id = :actorId)
+          )
+          AND a.id NOT IN (
+              SELECT m.muted.id FROM MuteEntity m WHERE m.muter.id = :actorId
+          )
+        """)
+    long countSearchTweetsForActor(
+            @Param("actorId") UUID actorId,
+            @Param("pattern") String pattern
+    );
+
+    // =========================================================================
     // Single tweet retrieval (TWEET_GET)
     // =========================================================================
 

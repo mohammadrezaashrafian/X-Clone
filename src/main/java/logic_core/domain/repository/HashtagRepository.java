@@ -71,4 +71,25 @@ public interface HashtagRepository
      * {@link #getTweetsByHashtag}).
      */
     long countTweetsByHashtag(UUID actorId, UUID hashtagId);
+
+    // -------------------------------------------------------------------------
+    // Search (HASHTAG_SEARCH)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Case-insensitive prefix search over the canonical persisted tag column,
+     * deterministically ordered by tag ascending. Reads existing rows only —
+     * never creates or finds-or-creates hashtags.
+     *
+     * @param prefix  already-canonical lowercase prefix from the use case
+     * @param limit   page size (1..100)
+     * @param offset  zero-based row offset (page * pageSize)
+     */
+    List<HashtagModel> searchByTagPrefix(String prefix, int limit, int offset);
+
+    /**
+     * Count of hashtags matching the prefix — same filter as
+     * {@link #searchByTagPrefix}.
+     */
+    long countByTagPrefix(String prefix);
 }

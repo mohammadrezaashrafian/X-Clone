@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -171,6 +172,49 @@ public class HashtagRepositoryAdapter implements HashtagRepository
     public long countTweetsByHashtag(UUID actorId, UUID hashtagId)
     {
         return tweetHashtagJpaRepository.countTweetsByHashtag(actorId, hashtagId);
+    }
+
+    @Override
+    public List<HashtagModel> searchByTagPrefix(String prefix, int limit, int offset)
+    {
+        if (prefix == null || prefix.isEmpty())
+        {
+            return List.of();
+        }
+
+        return hashtagJpaRepository.searchByTagPrefix(
+                        toPrefixLikePattern(prefix),
+                        PageRequest.of(offset / limit, limit)
+                ).stream()
+                .map(HashtagEntityMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public long countByTagPrefix(String prefix)
+    {
+        if (prefix == null || prefix.isEmpty())
+        {
+            return 0L;
+        }
+        return hashtagJpaRepository.countByTagPrefix(toPrefixLikePattern(prefix));
+    }
+
+    /**
+     * Builds the LIKE prefix pattern for hashtag search, hardening the
+     * canonical prefix for LIKE semantics: backslash, percent and underscore
+     * are escaped with a backslash, matching the ESCAPE '\\' clause in the
+     * search JPQL. The prefix is already lowercase (canonical form produced by
+     * the use case); it is lowercased again defensively. Bound as a parameter.
+     */
+    private static String toPrefixLikePattern(String prefix)
+    {
+        String escaped = prefix
+                .replace("\\", "\\\\")
+                .replace("%", "\\%")
+                .replace("_", "\\_");
+
+        return escaped.toLowerCase(Locale.ROOT) + "%";
     }
 
     private List<TimelineTweet> toTimelineTweets(List<TimelineTweetProjection> projections)

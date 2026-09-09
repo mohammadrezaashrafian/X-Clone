@@ -3,6 +3,7 @@ package logic_core.app.facade;
 import logic_core.app.dto.request.*;
 import logic_core.app.dto.response.LikeResponse;
 import logic_core.app.dto.response.TweetResponse;
+import logic_core.app.dto.response.TweetSearchResponse;
 import logic_core.app.dto.timeline.TimelineTweet;
 import logic_core.app.usecase.follow.GetRepliesUseCase;
 import logic_core.app.usecase.tweet.*;
@@ -27,6 +28,7 @@ public class TweetFacade
     private final UnretweetUseCase unretweetUseCase;
     private final UnlikeTweetUseCase unlikeTweetUseCase;
     private final GetRepliesUseCase getRepliesUseCase;
+    private final SearchTweetsUseCase searchTweetsUseCase;
 
     public Result<TweetResponse> createTweet(CreateTweetRequest request)
     {
@@ -76,5 +78,10 @@ public class TweetFacade
     public Result<List<TimelineTweet>> getReplies(GetRepliesRequest request)
     {
         return getRepliesUseCase.execute(request);
+    }
+
+    public Result<TweetSearchResponse> searchTweets(SearchTweetsRequest request)
+    {
+        return searchTweetsUseCase.execute(request);
     }
 }
