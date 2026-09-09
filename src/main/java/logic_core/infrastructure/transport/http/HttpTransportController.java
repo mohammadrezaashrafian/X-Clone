@@ -14,6 +14,7 @@ import logic_core.infrastructure.transport.ResponseEnvelope;
 import logic_core.infrastructure.transport.ResponseType;
 import logic_core.infrastructure.transport.server.RequestDispatcher;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -64,6 +65,7 @@ import java.util.Set;
  * contract &amp; error-handling milestone ([V2.0 #5]); this controller keeps the envelope
  * wire format unchanged and only adds {@code 401} for unauthenticated access.
  */
+@Slf4j
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -155,16 +157,17 @@ public class HttpTransportController
         {
             // Server-side failures - including infrastructure/session-resolver
             // exceptions raised while authenticating - are HTTP 500, never
-            // reported as MALFORMED_JSON.
+            // reported as MALFORMED_JSON. Never expose exception messages to
+            // the client; the full exception is logged server-side for
+            // diagnosis. (Issue #21 security baseline)
+            log.error("Unhandled transport failure", e);
             servletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
             return gson.toJson(ResponseEnvelope.failure(
                     null,
                     ResponseType.BAD_REQUEST.toWire(),
                     "UNEXPECTED_ERROR",
-                    e.getMessage() != null
-                            ? e.getMessage()
-                            : "Unexpected server error"
+                    "Unexpected server error"
             ));
         }
         finally

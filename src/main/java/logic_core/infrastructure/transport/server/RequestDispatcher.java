@@ -15,6 +15,7 @@ import logic_core.infrastructure.transport.RequestType;
 import logic_core.infrastructure.transport.ResponseEnvelope;
 import logic_core.infrastructure.transport.ResponseType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BiFunction;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class RequestDispatcher
@@ -215,13 +217,19 @@ public class RequestDispatcher
         }
         catch (Exception e)
         {
+            // Issue #21 security baseline: this catch-all handles unexpected
+            // infrastructure failures, which may carry SQL/schema details or
+            // internal class names. The client always receives the generic
+            // message; the raw exception is logged server-side with its stack
+            // trace for diagnosis. The UNEXPECTED_ERROR code is unchanged
+            // (existing transport contract and tests are preserved).
+            log.error("Unhandled dispatch failure for request type={}",
+                    requestType, e);
             return failureResponse(
                     requestId,
                     ResponseType.BAD_REQUEST,
                     "UNEXPECTED_ERROR",
-                    e.getMessage() != null
-                            ? e.getMessage()
-                            : "Unexpected server error"
+                    "Unexpected server error"
             );
         }
     }

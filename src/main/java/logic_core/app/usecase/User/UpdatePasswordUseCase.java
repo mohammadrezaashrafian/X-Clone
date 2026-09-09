@@ -9,6 +9,7 @@ import logic_core.common.result.Result;
 import logic_core.common.security.PasswordHasher;
 import logic_core.domain.model.UserModel;
 import logic_core.domain.repository.UserRepository;
+import logic_core.session.SessionManager;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class UpdatePasswordUseCase
     @NonNull private final UserRepository repository;
     @NonNull private final AuthLockOrchestrator lockOrchestrator;
     @NonNull private final PasswordValidator passwordValidator;
+    @NonNull private final SessionManager sessionManager;
 
     @Transactional
     public Result<Void> execute(UpdatePasswordRequest request)
@@ -63,6 +65,12 @@ public class UpdatePasswordUseCase
             user.setUpdatedAt(OffsetDateTime.now());
 
             repository.update(user);
+
+            // Stolen-token containment (Issue #21): a session minted under the
+            // old credential must die with it — mirroring the existing
+            // ResetPasswordUseCase behavior, which already revokes all sessions
+            // for the user on a password reset.
+            sessionManager.revokeAllForUser(context.lockedUser().getId());
 
             return Result.success(null);
         }
