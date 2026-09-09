@@ -134,6 +134,51 @@ public class InteractionPolicy
         validateBaseInteraction(userId, tweetAuthorId);
     }
 
+    /**
+     * Validates that a user may bookmark a tweet. Bookmarking is a private
+     * interaction with another user's content, so it applies the same base
+     * interaction barrier as liking (active users, block barrier). Whether a
+     * bookmark already exists is decided by the caller (duplicate bookmarks
+     * surface as a conflict).
+     */
+    public void validateBookmark(UUID userId, UUID tweetId, UUID tweetAuthorId)
+    {
+        requireNonNullId(userId, "userId");
+        requireNonNullId(tweetId, "tweetId");
+        requireNonNullId(tweetAuthorId, "tweetAuthorId");
+
+        validateBaseInteraction(userId, tweetAuthorId);
+    }
+
+    /**
+     * Validates that a user may remove their own bookmark of a tweet. Applies
+     * the same block barrier as the other interaction removals; whether a
+     * bookmark actually exists is decided by the caller (a missing bookmark
+     * surfaces as a not-found).
+     */
+    public void validateUnbookmark(UUID userId, UUID tweetId, UUID tweetAuthorId)
+    {
+        requireNonNullId(userId, "userId");
+        requireNonNullId(tweetId, "tweetId");
+        requireNonNullId(tweetAuthorId, "tweetAuthorId");
+
+        validateBlockBarrier(userId, tweetAuthorId);
+    }
+
+    /**
+     * Validates that a user may vote in a poll attached to another user's
+     * tweet. Voting is an interaction with the poll owner's content, so it
+     * applies the same base interaction barrier as liking (active users, block
+     * barrier). Expiry and duplicate-vote checks are the caller's concern.
+     */
+    public void validatePollVote(UUID userId, UUID tweetAuthorId)
+    {
+        requireNonNullId(userId, "userId");
+        requireNonNullId(tweetAuthorId, "tweetAuthorId");
+
+        validateBaseInteraction(userId, tweetAuthorId);
+    }
+
     public void validateUnlike(UUID userId, UUID tweetId, UUID tweetAuthorId)
     {
         requireNonNullId(userId, "userId");

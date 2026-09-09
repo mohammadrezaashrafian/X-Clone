@@ -16,6 +16,12 @@ public interface UserRepository
 
     Optional<UserModel> findById(UUID userId);
 
+    /**
+     * Loads multiple users in one round trip. Missing ids are simply absent
+     * from the result. Used to batch-resolve notification actors (V2.1 #7).
+     */
+    List<UserModel> findByIds(List<UUID> userIds);
+
     Optional<UserModel> findByIdForUpdate(UUID userId);
 
     Optional<UserModel> findByUsername(String username);

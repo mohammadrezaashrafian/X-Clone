@@ -11,6 +11,7 @@ import logic_core.domain.model.MediaModel;
 import logic_core.domain.model.TweetModel;
 import logic_core.domain.repository.MediaRepository;
 import logic_core.domain.repository.TweetRepository;
+import logic_core.domain.service.MediaStorageService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class DeleteMediaUseCase
 {
     @NonNull private final MediaRepository mediaRepository;
     @NonNull private final TweetRepository tweetRepository;
+    @NonNull private final MediaStorageService mediaStorageService;
     @NonNull private final AuthLockOrchestrator lockOrchestrator;
 
     @Transactional
@@ -61,6 +63,24 @@ public class DeleteMediaUseCase
 
 
 
+            // Uploaded-but-not-yet-attached media has no tweet; ownership is
+            // decided directly against the media's owner instead of the tweet
+            // author (a null tweetId would otherwise fail the lookup below).
+            if (media.getTweetId() == null)
+            {
+                if (!media.isOwnedBy(currentUserId))
+                {
+                    throw new ForbiddenException(
+                            "You cannot delete media you do not own."
+                    );
+                }
+
+                mediaRepository.delete(media.getMediaId());
+                mediaStorageService.delete(media.getMediaUrl());
+
+                return Result.success(null);
+            }
+
             TweetModel tweet =
                     tweetRepository.findById(
                                     media.getTweetId()
@@ -86,6 +106,7 @@ public class DeleteMediaUseCase
                     media.getMediaId()
             );
 
+            mediaStorageService.delete(media.getMediaUrl());
 
             return Result.success(null);
 

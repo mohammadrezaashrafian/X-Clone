@@ -9,6 +9,8 @@ import logic_core.app.dto.validator.TweetValidator;
 import logic_core.app.mapper.TweetMapper;
 import logic_core.app.mapper.UserSummaryResponseMapper;
 import logic_core.app.security.AuthLockOrchestrator;
+import logic_core.app.service.HashtagApplicationService;
+import logic_core.app.service.MentionApplicationService;
 import logic_core.app.service.NotificationApplicationService;
 import logic_core.app.security.SessionUserContext;
 import logic_core.common.exception.*;
@@ -27,6 +29,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,6 +48,8 @@ public class ReplyTweetUseCase
     @NonNull private final MediaRepository mediaRepository;
     @NonNull private final RelationshipRepository relationshipRepository;
     @NonNull private final NotificationApplicationService notificationService;
+    @NonNull private final HashtagApplicationService hashtagService;
+    @NonNull private final MentionApplicationService mentionService;
 
 
     @Transactional
@@ -116,18 +122,23 @@ public class ReplyTweetUseCase
 
 
 
-            List<MediaModel> mediaModels = List.of();
+            List<MediaModel> mediaModels =
+                    attachUploadedMedia(
+                            request.mediaUrls(),
+                            savedReply.getId(),
+                            currentUserId
+                    );
 
+            hashtagService.processTweetHashtags(
+                    savedReply.getContent(),
+                    savedReply.getId()
+            );
 
-            if (request.mediaUrls() != null &&
-                    !request.mediaUrls().isEmpty())
-            {
-                mediaModels =
-                        mediaRepository.createMedia(
-                                savedReply.getId(),
-                                request.mediaUrls()
-                        );
-            }
+            mentionService.processTweetMentions(
+                    savedReply.getContent(),
+                    savedReply.getId(),
+                    currentUserId
+            );
 
 
 
@@ -169,6 +180,91 @@ public class ReplyTweetUseCase
     }
 
 
+
+    /**
+     * Attaches media referenced by the request to the reply.
+     *
+     * <p>Tokens that parse as a UUID are treated as uploaded-media ids
+     * (V2.1 #6): the existing media row must exist, belong to the
+     * authenticated actor, and be unattached; the existing row is then
+     * attached rather than duplicated. Tokens that are not UUIDs keep the
+     * legacy URL-based contract and create new media rows via
+     * {@link MediaRepository#createMedia}.
+     */
+    private List<MediaModel> attachUploadedMedia(
+            List<String> uploadTokens,
+            UUID tweetId,
+            UUID actorId)
+    {
+        if (uploadTokens == null || uploadTokens.isEmpty())
+        {
+            return List.of();
+        }
+
+        List<MediaModel> attached = new ArrayList<>();
+        List<String> legacyUrls = new ArrayList<>();
+
+        for (String token : uploadTokens)
+        {
+            UUID mediaId = parseMediaId(token);
+            if (mediaId == null)
+            {
+                legacyUrls.add(token);
+                continue;
+            }
+
+            MediaModel media = mediaRepository.findById(mediaId)
+                    .orElseThrow(() -> new NotFoundException(
+                            "Media not found: nonexistent media id " + mediaId));
+
+            if (!media.isOwnedBy(actorId))
+            {
+                throw new ForbiddenException(
+                        "Media ownership violation: media does not belong to the authenticated user");
+            }
+
+            if (media.isAttachedToTweet())
+            {
+                throw new ConflictException(
+                        "Media is already attached to another tweet");
+            }
+
+            if (!mediaRepository.attachToTweet(mediaId, tweetId))
+            {
+                throw new ConflictException(
+                        "Media is already attached to another tweet");
+            }
+
+            // Reflect the attachment on the in-memory model so the response
+            // carries the attached media row (no duplicate row is created).
+            media.attachToTweet(tweetId);
+            attached.add(media);
+        }
+
+        if (!legacyUrls.isEmpty())
+        {
+            attached.addAll(mediaRepository.createMedia(tweetId, legacyUrls));
+        }
+
+        attached.sort(Comparator.comparing(m -> (int) m.getDisplayOrder()));
+        return attached;
+    }
+
+    private static UUID parseMediaId(String token)
+    {
+        if (token == null)
+        {
+            return null;
+        }
+        try
+        {
+            return UUID.fromString(token.trim());
+        }
+        catch (IllegalArgumentException e)
+        {
+            return null;
+        }
+    }
 
     private TweetResponse toResponse(
             TweetModel tweet,
@@ -218,6 +314,7 @@ public class ReplyTweetUseCase
                 repliedTo,
                 null,
                 media,
+                null,
                 null
         );
     }
@@ -236,6 +333,7 @@ public class ReplyTweetUseCase
 
         return TweetMapper.toResponse(
                 enriched,
+                null,
                 null,
                 null,
                 null,

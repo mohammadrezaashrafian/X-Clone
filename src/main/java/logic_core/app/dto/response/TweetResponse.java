@@ -18,5 +18,6 @@ public record TweetResponse(
         long likeCount,
         long replyCount,
         long retweetCount,
-        List<MediaResponse> media
+        List<MediaResponse> media,
+        PollResponse poll
 ) {}

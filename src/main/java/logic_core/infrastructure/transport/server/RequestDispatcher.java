@@ -28,11 +28,14 @@ public class RequestDispatcher
 {
     private final Gson gson;
     private final AuthFacade authFacade;
+    private final BookmarkFacade bookmarkFacade;
     private final ConversationFacade conversationFacade;
     private final FollowQueryFacade followQueryFacade;
+    private final HashtagFacade hashtagFacade;
     private final MediaFacade mediaFacade;
     private final MessageFacade messageFacade;
     private final NotificationFacade notificationFacade;
+    private final PollFacade pollFacade;
     private final RelationFacade relationFacade;
     private final TimelineFacade timelineFacade;
     private final TweetFacade tweetFacade;
@@ -66,7 +69,8 @@ public class RequestDispatcher
                  TWEET_UNRETWEET,
                  TWEET_LIKE,
                  TWEET_UNLIKE,
-                 TWEET_GET ->
+                 TWEET_GET,
+                 TWEET_SEARCH ->
 
                     dispatchTweet(request);
 
@@ -132,7 +136,8 @@ public class RequestDispatcher
             // ------------- MEDIA   --------------
 
             case MEDIA_DELETE,
-                 MEDIA_DOWNLOAD ->
+                 MEDIA_DOWNLOAD,
+                 MEDIA_UPLOAD ->
 
                 dispatchMedia(request);
 
@@ -144,9 +149,35 @@ public class RequestDispatcher
 
             case NOTIFICATION_GET,
                  NOTIFICATION_READ,
-                 NOTIFICATION_READ_ALL ->
+                 NOTIFICATION_READ_ALL,
+                 NOTIFICATION_GET_UNREAD_COUNT ->
 
                     dispatchNotification(request);
+
+            // ---------------- HASHTAG ----------------
+
+            case HASHTAG_FOLLOW,
+                 HASHTAG_UNFOLLOW,
+                 HASHTAG_GET_TWEETS,
+                 HASHTAG_SEARCH,
+                 TRENDING_HASHTAGS ->
+
+                    dispatchHashtag(request);
+
+            // ---------------- BOOKMARK ----------------
+
+            case TWEET_BOOKMARK,
+                 TWEET_UNBOOKMARK,
+                 BOOKMARKS_GET,
+                 USER_GET_IS_BOOKMARKED ->
+
+                    dispatchBookmark(request);
+
+            // ---------------- POLL ----------------
+
+            case POLL_VOTE ->
+
+                    dispatchPoll(request);
         };
     }
 
@@ -354,6 +385,8 @@ public class RequestDispatcher
 
                         case TWEET_GET -> handleGetTweet(requestId, payload, facade);
 
+                        case TWEET_SEARCH -> handleSearchTweets(requestId, payload, facade);
+
                         default -> throw new IllegalArgumentException("Unsupported tweet request: " + request.type());
                     };
                 });
@@ -445,6 +478,9 @@ public class RequestDispatcher
                         case MEDIA_DELETE ->
                                 handleDeleteMedia(requestId, payload, facade);
 
+                        case MEDIA_UPLOAD ->
+                                handleUploadMedia(requestId, payload, facade);
+
                         default ->
                                 throw new IllegalArgumentException(
                                         "Unsupported media request: " + request.type()
@@ -508,8 +544,92 @@ public class RequestDispatcher
                         case NOTIFICATION_READ_ALL ->
                                 handleReadAllNotifications(requestId, payload, facade);
 
+                        case NOTIFICATION_GET_UNREAD_COUNT ->
+                                handleCountUnreadNotifications(requestId, payload, facade);
+
                         default -> throw new IllegalArgumentException(
                                 "Unsupported notification request: " + request.type());
+                    };
+                });
+    }
+
+    public ResponseEnvelope dispatchHashtag(RequestEnvelope request)
+    {
+        return execute(
+                request,
+                hashtagFacade,
+                (facade, payload) ->
+                {
+                    UUID requestId = request.requestId();
+
+                    return switch (request.type())
+                    {
+                        case HASHTAG_FOLLOW ->
+                                handleFollowHashtag(requestId, payload, facade);
+
+                        case HASHTAG_UNFOLLOW ->
+                                handleUnfollowHashtag(requestId, payload, facade);
+
+                        case HASHTAG_GET_TWEETS ->
+                                handleGetHashtagTweets(requestId, payload, facade);
+
+                        case HASHTAG_SEARCH ->
+                                handleSearchHashtags(requestId, payload, facade);
+
+                        case TRENDING_HASHTAGS ->
+                                handleGetTrendingHashtags(requestId, payload, facade);
+
+                        default -> throw new IllegalArgumentException(
+                                "Unsupported hashtag request: " + request.type());
+                    };
+                });
+    }
+
+    public ResponseEnvelope dispatchBookmark(RequestEnvelope request)
+    {
+        return execute(
+                request,
+                bookmarkFacade,
+                (facade, payload) ->
+                {
+                    UUID requestId = request.requestId();
+
+                    return switch (request.type())
+                    {
+                        case TWEET_BOOKMARK ->
+                                handleBookmarkTweet(requestId, payload, facade);
+
+                        case TWEET_UNBOOKMARK ->
+                                handleUnbookmarkTweet(requestId, payload, facade);
+
+                        case BOOKMARKS_GET ->
+                                handleGetBookmarks(requestId, payload, facade);
+
+                        case USER_GET_IS_BOOKMARKED ->
+                                handleIsBookmarked(requestId, payload, facade);
+
+                        default -> throw new IllegalArgumentException(
+                                "Unsupported bookmark request: " + request.type());
+                    };
+                });
+    }
+
+    public ResponseEnvelope dispatchPoll(RequestEnvelope request)
+    {
+        return execute(
+                request,
+                pollFacade,
+                (facade, payload) ->
+                {
+                    UUID requestId = request.requestId();
+
+                    return switch (request.type())
+                    {
+                        case POLL_VOTE ->
+                                handleVotePoll(requestId, payload, facade);
+
+                        default -> throw new IllegalArgumentException(
+                                "Unsupported poll request: " + request.type());
                     };
                 });
     }
@@ -1371,6 +1491,33 @@ public class RequestDispatcher
         );
     }
 
+    private ResponseEnvelope handleSearchTweets(
+            UUID requestId,
+            JsonElement payload,
+            TweetFacade facade)
+    {
+        SearchTweetsRequest request =
+                gson.fromJson(payload, SearchTweetsRequest.class);
+
+        Result<TweetSearchResponse> result = facade.searchTweets(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.TWEET_SEARCH_RESPONSE,
+                    "TWEET_SEARCH_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.TWEET_SEARCH_RESPONSE,
+                result.getData()
+        );
+    }
+
 
     private ResponseEnvelope handleRetweet(
             UUID requestId,
@@ -1433,7 +1580,7 @@ public class RequestDispatcher
         GetNotificationsRequest request =
                 gson.fromJson(payload, GetNotificationsRequest.class);
 
-        Result<List<NotificationResponse>> result =
+        Result<GetNotificationsPageResponse> result =
                 facade.getNotifications(request);
 
         if (result.isFailure())
@@ -1505,6 +1652,34 @@ public class RequestDispatcher
         return successResponse(
                 requestId,
                 ResponseType.NOTIFICATION_READ_ALL_RESPONSE,
+                result.getData()
+        );
+    }
+
+    private ResponseEnvelope handleCountUnreadNotifications(
+            UUID requestId,
+            JsonElement payload,
+            NotificationFacade facade)
+    {
+        CountUnreadNotificationsRequest request =
+                gson.fromJson(payload, CountUnreadNotificationsRequest.class);
+
+        Result<UnreadNotificationsCountResponse> result =
+                facade.countUnreadNotifications(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.NOTIFICATION_GET_UNREAD_COUNT_RESPONSE,
+                    "NOTIFICATION_GET_UNREAD_COUNT_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.NOTIFICATION_GET_UNREAD_COUNT_RESPONSE,
                 result.getData()
         );
     }
@@ -2035,6 +2210,313 @@ public class RequestDispatcher
         );
     }
 
+    private ResponseEnvelope handleUploadMedia(
+            UUID requestId,
+            JsonElement payload,
+            MediaFacade facade)
+    {
+        UploadMediaRequest request =
+                gson.fromJson(
+                        payload,
+                        UploadMediaRequest.class
+                );
+
+        Result<UploadMediaResponse> result =
+                facade.uploadMedia(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.MEDIA_UPLOAD_RESPONSE,
+                    "UPLOAD_MEDIA_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.MEDIA_UPLOAD_RESPONSE,
+                result.getData()
+        );
+    }
+
+    //===============================================================
+    //                     DISPATCH HASHTAG
+    //===============================================================
+    private ResponseEnvelope handleFollowHashtag(
+            UUID requestId,
+            JsonElement payload,
+            HashtagFacade facade)
+    {
+        FollowHashtagRequest request =
+                gson.fromJson(payload, FollowHashtagRequest.class);
+
+        Result<HashtagFollowResponse> result = facade.follow(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.HASHTAG_FOLLOW_RESPONSE,
+                    "HASHTAG_FOLLOW_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.HASHTAG_FOLLOW_RESPONSE,
+                result.getData()
+        );
+    }
+
+    private ResponseEnvelope handleUnfollowHashtag(
+            UUID requestId,
+            JsonElement payload,
+            HashtagFacade facade)
+    {
+        UnfollowHashtagRequest request =
+                gson.fromJson(payload, UnfollowHashtagRequest.class);
+
+        Result<HashtagFollowResponse> result = facade.unfollow(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.HASHTAG_UNFOLLOW_RESPONSE,
+                    "HASHTAG_UNFOLLOW_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.HASHTAG_UNFOLLOW_RESPONSE,
+                result.getData()
+        );
+    }
+
+    private ResponseEnvelope handleGetHashtagTweets(
+            UUID requestId,
+            JsonElement payload,
+            HashtagFacade facade)
+    {
+        GetHashtagTweetsRequest request =
+                gson.fromJson(payload, GetHashtagTweetsRequest.class);
+
+        Result<HashtagTweetsResponse> result = facade.getTweets(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.HASHTAG_GET_TWEETS_RESPONSE,
+                    "HASHTAG_GET_TWEETS_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.HASHTAG_GET_TWEETS_RESPONSE,
+                result.getData()
+        );
+    }
+
+    private ResponseEnvelope handleSearchHashtags(
+            UUID requestId,
+            JsonElement payload,
+            HashtagFacade facade)
+    {
+        SearchHashtagsRequest request =
+                gson.fromJson(payload, SearchHashtagsRequest.class);
+
+        Result<HashtagSearchResponse> result = facade.searchHashtags(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.HASHTAG_SEARCH_RESPONSE,
+                    "HASHTAG_SEARCH_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.HASHTAG_SEARCH_RESPONSE,
+                result.getData()
+        );
+    }
+
+    private ResponseEnvelope handleGetTrendingHashtags(
+            UUID requestId,
+            JsonElement payload,
+            HashtagFacade facade)
+    {
+        GetTrendingHashtagsRequest request =
+                gson.fromJson(payload, GetTrendingHashtagsRequest.class);
+
+        Result<TrendingHashtagsResponse> result = facade.getTrending(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.TRENDING_HASHTAGS_RESPONSE,
+                    "TRENDING_HASHTAGS_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.TRENDING_HASHTAGS_RESPONSE,
+                result.getData()
+        );
+    }
+
+    //===============================================================
+    //                     DISPATCH BOOKMARK
+    //===============================================================
+    private ResponseEnvelope handleBookmarkTweet(
+            UUID requestId,
+            JsonElement payload,
+            BookmarkFacade facade)
+    {
+        BookmarkTweetRequest request =
+                gson.fromJson(payload, BookmarkTweetRequest.class);
+
+        Result<BookmarkResponse> result = facade.bookmark(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.TWEET_BOOKMARK_RESPONSE,
+                    "TWEET_BOOKMARK_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.TWEET_BOOKMARK_RESPONSE,
+                result.getData()
+        );
+    }
+
+    private ResponseEnvelope handleUnbookmarkTweet(
+            UUID requestId,
+            JsonElement payload,
+            BookmarkFacade facade)
+    {
+        UnbookmarkTweetRequest request =
+                gson.fromJson(payload, UnbookmarkTweetRequest.class);
+
+        Result<BookmarkResponse> result = facade.unbookmark(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.TWEET_UNBOOKMARK_RESPONSE,
+                    "TWEET_UNBOOKMARK_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.TWEET_UNBOOKMARK_RESPONSE,
+                result.getData()
+        );
+    }
+
+    private ResponseEnvelope handleGetBookmarks(
+            UUID requestId,
+            JsonElement payload,
+            BookmarkFacade facade)
+    {
+        GetBookmarksRequest request =
+                gson.fromJson(payload, GetBookmarksRequest.class);
+
+        Result<GetBookmarksResponse> result = facade.getBookmarks(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.BOOKMARKS_GET_RESPONSE,
+                    "BOOKMARKS_GET_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.BOOKMARKS_GET_RESPONSE,
+                result.getData()
+        );
+    }
+
+    private ResponseEnvelope handleIsBookmarked(
+            UUID requestId,
+            JsonElement payload,
+            BookmarkFacade facade)
+    {
+        GetIsBookmarkedRequest request =
+                gson.fromJson(payload, GetIsBookmarkedRequest.class);
+
+        Result<GetIsBookmarkedResponse> result = facade.isBookmarked(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.USER_GET_IS_BOOKMARKED_RESPONSE,
+                    "GET_IS_BOOKMARKED_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.USER_GET_IS_BOOKMARKED_RESPONSE,
+                result.getData()
+        );
+    }
+
+    private ResponseEnvelope handleVotePoll(
+            UUID requestId,
+            JsonElement payload,
+            PollFacade facade)
+    {
+        VotePollRequest request =
+                gson.fromJson(payload, VotePollRequest.class);
+
+        Result<PollResponse> result = facade.vote(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.POLL_VOTE_RESPONSE,
+                    "POLL_VOTE_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.POLL_VOTE_RESPONSE,
+                result.getData()
+        );
+    }
+
     private ResponseType responseTypeFor(RequestType requestType)
     {
         return switch (requestType)
@@ -2073,9 +2555,21 @@ public class RequestDispatcher
             case TWEET_UNRETWEET -> ResponseType.TWEET_UNRETWEET_RESPONSE;
             case TWEET_GET -> ResponseType.TWEET_GET_RESPONSE;
             case TWEET_GET_REPLIES -> ResponseType.TWEET_GET_REPLY_RESPONSE;
+            case TWEET_SEARCH -> ResponseType.TWEET_SEARCH_RESPONSE;
             case NOTIFICATION_GET -> ResponseType.NOTIFICATION_GET_RESPONSE;
             case NOTIFICATION_READ -> ResponseType.NOTIFICATION_READ_RESPONSE;
             case NOTIFICATION_READ_ALL -> ResponseType.NOTIFICATION_READ_ALL_RESPONSE;
+            case NOTIFICATION_GET_UNREAD_COUNT -> ResponseType.NOTIFICATION_GET_UNREAD_COUNT_RESPONSE;
+            case HASHTAG_FOLLOW -> ResponseType.HASHTAG_FOLLOW_RESPONSE;
+            case HASHTAG_UNFOLLOW -> ResponseType.HASHTAG_UNFOLLOW_RESPONSE;
+            case HASHTAG_GET_TWEETS -> ResponseType.HASHTAG_GET_TWEETS_RESPONSE;
+            case HASHTAG_SEARCH -> ResponseType.HASHTAG_SEARCH_RESPONSE;
+            case TRENDING_HASHTAGS -> ResponseType.TRENDING_HASHTAGS_RESPONSE;
+            case TWEET_BOOKMARK -> ResponseType.TWEET_BOOKMARK_RESPONSE;
+            case TWEET_UNBOOKMARK -> ResponseType.TWEET_UNBOOKMARK_RESPONSE;
+            case BOOKMARKS_GET -> ResponseType.BOOKMARKS_GET_RESPONSE;
+            case USER_GET_IS_BOOKMARKED -> ResponseType.USER_GET_IS_BOOKMARKED_RESPONSE;
+            case POLL_VOTE -> ResponseType.POLL_VOTE_RESPONSE;
             case USER_GET_PROFILE -> ResponseType.USER_GET_PROFILE_RESPONSE;
             case USER_SEARCH -> ResponseType.USER_SEARCH_RESPONSE;
             case USER_UPDATE_PROFILE -> ResponseType.USER_UPDATE_PROFILE_RESPONSE;
@@ -2090,6 +2584,7 @@ public class RequestDispatcher
             case FOLLOW_GET_FOLLOWERS -> ResponseType.FOLLOW_GET_FOLLOWERS_RESPONSE;
             case MEDIA_DELETE -> ResponseType.MEDIA_DELETE_RESPONSE;
             case MEDIA_DOWNLOAD -> ResponseType.MEDIA_DOWNLOAD_RESPONSE;
+            case MEDIA_UPLOAD -> ResponseType.MEDIA_UPLOAD_RESPONSE;
             case USER_GET_IS_FOLLOW -> ResponseType.USER_GET_IS_FOLLOW_RESPONSE;
             case USER_GET_IS_LIKE -> ResponseType.USER_GET_IS_LIKE_RESPONSE;
         };

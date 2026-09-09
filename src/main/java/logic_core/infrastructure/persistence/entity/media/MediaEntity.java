@@ -2,6 +2,7 @@ package logic_core.infrastructure.persistence.entity.media;
 
 import jakarta.persistence.*;
 import logic_core.domain.model.media.MediaType;
+import logic_core.infrastructure.persistence.entity.UserEntity;
 import logic_core.infrastructure.persistence.entity.tweet.TweetEntity;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -16,7 +17,8 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "media", indexes = {
-    @Index(name = "idx_media_tweet_id", columnList = "tweet_id")
+    @Index(name = "idx_media_tweet_id", columnList = "tweet_id"),
+    @Index(name = "idx_media_uploaded_by", columnList = "uploaded_by")
 })
 public class MediaEntity {
 
@@ -28,10 +30,14 @@ public class MediaEntity {
     @Column(name = "created_at", updatable = false)
     private OffsetDateTime createdAt;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "tweet_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "tweet_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private TweetEntity tweet;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "uploaded_by")
+    private UserEntity uploadedBy;
 
     @Column(name = "media_url", nullable = false)
     private String mediaURL;
@@ -48,4 +54,4 @@ public class MediaEntity {
 
     @Column(name = "display_order", nullable = false)
     private short displayOrder = 0;
-}
+}

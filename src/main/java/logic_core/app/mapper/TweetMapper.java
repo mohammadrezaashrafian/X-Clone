@@ -1,6 +1,7 @@
 package logic_core.app.mapper;
 
 import logic_core.app.dto.response.MediaResponse;
+import logic_core.app.dto.response.PollResponse;
 import logic_core.app.dto.response.TweetResponse;
 import logic_core.app.dto.response.UserSummaryResponse;
 import logic_core.domain.model.TweetModel;
@@ -18,7 +19,8 @@ public class TweetMapper
             TweetResponse repliedTweet,
             TweetResponse retweetedTweet,
             List<MediaResponse> mediaResponses,
-            TweetResponse quotedTweet
+            TweetResponse quotedTweet,
+            PollResponse poll
     ) {
         if (model == null) return null;
 
@@ -36,7 +38,8 @@ public class TweetMapper
                 model.getLikeCount(),
                 model.getReplyCount(),
                 model.getRetweetCount(),
-                mediaResponses
+                mediaResponses,
+                poll
         );
     }
 

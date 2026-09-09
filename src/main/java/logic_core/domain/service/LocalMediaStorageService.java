@@ -50,6 +50,33 @@ public class LocalMediaStorageService implements MediaStorageService
     }
 
     @Override
+    public String uploadTweetMedia(UploadFile file, String storageExtension)
+    {
+        try
+        {
+            // Never trust the client-supplied extension: the stored file's
+            // extension is derived from the upload's validated content type.
+            String newFileName = UUID.randomUUID() + storageExtension;
+
+            Path tweetMediaDirectory = Paths.get(properties.getRootPath(), "tweets");
+
+            if (!Files.exists(tweetMediaDirectory))
+            {
+                Files.createDirectories(tweetMediaDirectory);
+            }
+
+            Path filePath = tweetMediaDirectory.resolve(newFileName);
+            Files.write(filePath, file.data(), StandardOpenOption.CREATE_NEW);
+
+            return "/media/tweets/" + newFileName;
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException("Failed to store tweet media", e);
+        }
+    }
+
+    @Override
     public void delete(String path)
     {
 
@@ -63,9 +90,10 @@ public class LocalMediaStorageService implements MediaStorageService
                             .getFileName()
                             .toString();
 
+            String[] segments = path.split("/");
+            String subdir = segments.length > 2 ? segments[2] : "avatars";
 
-
-            Path file = Paths.get(properties.getRootPath(), "avatars", fileName);
+            Path file = Paths.get(properties.getRootPath(), subdir, fileName);
 
             Files.deleteIfExists(file);
 

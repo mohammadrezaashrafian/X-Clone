@@ -25,6 +25,7 @@ public final class ClientApplicationContext implements AutoCloseable
     private final ExecutorService networkExecutor;
     @Setter private NavigationManager navigationManager;
     @Getter private final TimelineClientService timelineService;
+    @Getter private final BookmarkClientService bookmarkClientService;
     @Getter private final RelationClientService relationClientService;
     @Getter private final AuthClientService authClientService;
     @Getter private final ConversationClientService conversationClientService;
@@ -47,6 +48,7 @@ public final class ClientApplicationContext implements AutoCloseable
         });
 
         this.timelineService = new TimelineClientService(this);
+        this.bookmarkClientService = new BookmarkClientService(this);
         this.tweetService = new TweetClientService(this);
         this.relationClientService = new RelationClientService(this);
         this.authClientService = new AuthClientService(this);

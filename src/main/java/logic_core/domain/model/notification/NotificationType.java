@@ -11,5 +11,6 @@ public enum NotificationType
     REPLY,
     RETWEET,
     QUOTE,
-    FOLLOW
+    FOLLOW,
+    MENTION
 }

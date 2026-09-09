@@ -5,11 +5,13 @@ import logic_core.app.dto.request.UnfollowUserRequest;
 import logic_core.app.dto.response.FollowResponse;
 import logic_core.app.dto.validator.FollowValidator;
 import logic_core.app.mapper.FollowMapper;
+import logic_core.app.service.NotificationApplicationService;
 import logic_core.app.security.AuthLockOrchestrator;
 import logic_core.app.security.SessionUserContext;
 import logic_core.common.exception.AppException;
 import logic_core.common.result.Result;
 import logic_core.common.util.TimeProvider;
+import logic_core.domain.model.notification.NotificationType;
 import logic_core.domain.policy.FollowPolicy;
 import logic_core.domain.repository.RelationshipRepository;
 import lombok.NonNull;
@@ -25,6 +27,7 @@ public class UnfollowUserUseCase
     @NonNull private final FollowValidator validator;
     @NonNull private final FollowPolicy policy;
     @NonNull private final RelationshipRepository relationshipRepository;
+    @NonNull private final NotificationApplicationService notificationService;
     @NonNull private final TimeProvider timeProvider;
     @NonNull private final AuthLockOrchestrator lockOrchestrator;
 
@@ -50,6 +53,15 @@ public class UnfollowUserUseCase
 
             relationshipRepository.findFollowRelation(unfollowerId, unfollowedId)
                     .ifPresent(relationshipRepository::deleteFollow);
+
+            // V2.1 #7: undoing the follow also removes the FOLLOW notification
+            // it generated, so the recipient is not left with a ghost.
+            notificationService.retractInteraction(
+                    unfollowedId,
+                    unfollowerId,
+                    NotificationType.FOLLOW,
+                    null
+            );
 
             long followersCount = relationshipRepository.countFollowers(unfollowedId);
 

@@ -3,6 +3,7 @@ package logic_core.app.usecase.tweet;
 import jakarta.transaction.Transactional;
 import logic_core.app.dto.request.CreateTweetRequest;
 import logic_core.app.dto.response.MediaResponse;
+import logic_core.app.dto.response.PollResponse;
 import logic_core.app.dto.response.TweetResponse;
 import logic_core.app.dto.response.UserSummaryResponse;
 import logic_core.app.dto.validator.TweetValidator;
@@ -10,7 +11,10 @@ import logic_core.app.mapper.TweetMapper;
 import logic_core.app.mapper.UserSummaryResponseMapper;
 import logic_core.app.security.AuthLockOrchestrator;
 import logic_core.app.security.SessionUserContext;
+import logic_core.app.service.HashtagApplicationService;
+import logic_core.app.service.MentionApplicationService;
 import logic_core.app.service.NotificationApplicationService;
+import logic_core.app.service.PollApplicationService;
 import logic_core.common.exception.ConflictException;
 import logic_core.common.exception.ForbiddenException;
 import logic_core.common.exception.NotFoundException;
@@ -31,6 +35,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,6 +51,9 @@ public class CreateTweetUseCase
     @NonNull private final AuthLockOrchestrator lockOrchestrator;
     @NonNull private final MediaRepository mediaRepository;
     @NonNull private final NotificationApplicationService notificationService;
+    @NonNull private final HashtagApplicationService hashtagService;
+    @NonNull private final MentionApplicationService mentionService;
+    @NonNull private final PollApplicationService pollService;
 
     @Transactional
     public Result<TweetResponse> execute(@NonNull CreateTweetRequest request)
@@ -62,9 +70,17 @@ public class CreateTweetUseCase
                     request.replyToId(),
                     request.quoteOfId(),
                     request.mediaUrls(),
-                    false,
+                    request.poll() != null,
                     request.scheduledAt()
             );
+
+            // Validate the poll before any persistence so that an invalid poll
+            // fails atomically (no tweet row is written) with existing
+            // validation/error conventions.
+            if (request.poll() != null)
+            {
+                pollService.validate(request.poll());
+            }
 
             interactionPolicy.validateCreate(
                     request.content(),
@@ -86,12 +102,33 @@ public class CreateTweetUseCase
                             );
 
             List<MediaModel> mediaModels =
-                    request.mediaUrls() == null || request.mediaUrls().isEmpty()
-                            ? Collections.emptyList()
-                            : mediaRepository.createMedia(
+                    attachUploadedMedia(
+                            request.mediaUrls(),
                             savedTweet.getId(),
-                            request.mediaUrls()
+                            currentUserId
                     );
+
+            hashtagService.processTweetHashtags(
+                    savedTweet.getContent(),
+                    savedTweet.getId()
+            );
+
+            mentionService.processTweetMentions(
+                    savedTweet.getContent(),
+                    savedTweet.getId(),
+                    currentUserId
+            );
+
+            PollResponse pollResponse = null;
+            if (request.poll() != null)
+            {
+                // Poll creation happens in the same transaction as tweet
+                // creation (CreateTweetUseCase is @Transactional).
+                pollResponse = pollService.createPoll(
+                        request.poll(),
+                        savedTweet.getId()
+                );
+            }
 
             if (savedTweet.getQuotedTweetId() != null)
             {
@@ -106,7 +143,11 @@ public class CreateTweetUseCase
                         );
             }
 
-            TweetResponse response = buildTweetResponse(savedTweet, mediaModels);
+            TweetResponse response = buildTweetResponse(
+                    savedTweet,
+                    mediaModels,
+                    pollResponse
+            );
 
 
 
@@ -128,6 +169,91 @@ public class CreateTweetUseCase
         }
     }
 
+    /**
+     * Attaches media referenced by the request to the tweet.
+     *
+     * <p>Tokens that parse as a UUID are treated as uploaded-media ids
+     * (V2.1 #6): the existing media row must exist, belong to the
+     * authenticated actor, and be unattached; the existing row is then
+     * attached rather than duplicated. Tokens that are not UUIDs keep the
+     * legacy URL-based contract and create new media rows via
+     * {@link MediaRepository#createMedia}.
+     */
+    private List<MediaModel> attachUploadedMedia(
+            List<String> uploadTokens,
+            UUID tweetId,
+            UUID actorId)
+    {
+        if (uploadTokens == null || uploadTokens.isEmpty())
+        {
+            return Collections.emptyList();
+        }
+
+        List<MediaModel> attached = new ArrayList<>();
+        List<String> legacyUrls = new ArrayList<>();
+
+        for (String token : uploadTokens)
+        {
+            UUID mediaId = parseMediaId(token);
+            if (mediaId == null)
+            {
+                legacyUrls.add(token);
+                continue;
+            }
+
+            MediaModel media = mediaRepository.findById(mediaId)
+                    .orElseThrow(() -> new NotFoundException(
+                            "Media not found: nonexistent media id " + mediaId));
+
+            if (!media.isOwnedBy(actorId))
+            {
+                throw new ForbiddenException(
+                        "Media ownership violation: media does not belong to the authenticated user");
+            }
+
+            if (media.isAttachedToTweet())
+            {
+                throw new ConflictException(
+                        "Media is already attached to another tweet");
+            }
+
+            if (!mediaRepository.attachToTweet(mediaId, tweetId))
+            {
+                throw new ConflictException(
+                        "Media is already attached to another tweet");
+            }
+
+            // Reflect the attachment on the in-memory model so the response
+            // carries the attached media row (no duplicate row is created).
+            media.attachToTweet(tweetId);
+            attached.add(media);
+        }
+
+        if (!legacyUrls.isEmpty())
+        {
+            attached.addAll(mediaRepository.createMedia(tweetId, legacyUrls));
+        }
+
+        attached.sort(Comparator.comparing(m -> (int) m.getDisplayOrder()));
+        return attached;
+    }
+
+    private static UUID parseMediaId(String token)
+    {
+        if (token == null)
+        {
+            return null;
+        }
+        try
+        {
+            return UUID.fromString(token.trim());
+        }
+        catch (IllegalArgumentException e)
+        {
+            return null;
+        }
+    }
+
     private TweetModel createTweetEntity(
             CreateTweetRequest request,
             UUID authorId)
@@ -146,7 +272,8 @@ public class CreateTweetUseCase
 
     private TweetResponse buildTweetResponse(
             TweetModel tweet,
-            List<MediaModel> mediaModels)
+            List<MediaModel> mediaModels,
+            PollResponse poll)
     {
         UserModel author =
                 userRepository.findById(tweet.getAuthorId())
@@ -170,6 +297,7 @@ public class CreateTweetUseCase
                                             null,
                                             null,
                                             null,
+                                            null,
                                             null
                                     )
                             )
@@ -185,6 +313,7 @@ public class CreateTweetUseCase
                             .map(parent ->
                                     TweetMapper.toResponse(
                                             parent,
+                                            null,
                                             null,
                                             null,
                                             null,
@@ -215,7 +344,8 @@ public class CreateTweetUseCase
                 repliedTweetResponse,
                 null,
                 mediaResponses,
-                quotedTweetResponse
+                quotedTweetResponse,
+                poll
         );
     }
 }

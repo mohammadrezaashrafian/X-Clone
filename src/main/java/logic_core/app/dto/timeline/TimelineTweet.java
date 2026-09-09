@@ -1,6 +1,7 @@
 package logic_core.app.dto.timeline;
 
 import logic_core.app.dto.response.MediaResponse;
+import logic_core.app.dto.response.PollResponse;
 import lombok.Builder;
 
 import java.time.OffsetDateTime;
@@ -20,5 +21,6 @@ public record TimelineTweet(
         long retweetCount,
         boolean isLiked,
         OffsetDateTime publishedAt,
-        List<TimelineMedia> media
+        List<TimelineMedia> media,
+        PollResponse poll
 ) {}

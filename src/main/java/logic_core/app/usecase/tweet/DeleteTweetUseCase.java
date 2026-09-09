@@ -16,7 +16,10 @@ import logic_core.common.result.Result;
 import logic_core.common.util.TimeProvider;
 import logic_core.domain.model.TweetModel;
 import logic_core.domain.model.UserModel;
+import logic_core.domain.repository.BookmarkRepository;
 import logic_core.domain.repository.MediaRepository;
+import logic_core.domain.repository.MentionRepository;
+import logic_core.domain.repository.PollRepository;
 import logic_core.domain.repository.RelationshipRepository;
 import logic_core.domain.repository.TweetEditRepository;
 import logic_core.domain.repository.TweetRepository;
@@ -36,6 +39,9 @@ public class DeleteTweetUseCase
     @NonNull private final MediaRepository mediaRepository;
     @NonNull private final RelationshipRepository relationshipRepository;
     @NonNull private final TweetEditRepository tweetEditRepository;
+    @NonNull private final MentionRepository mentionRepository;
+    @NonNull private final BookmarkRepository bookmarkRepository;
+    @NonNull private final PollRepository pollRepository;
     @NonNull private final AuthLockOrchestrator lockOrchestrator;
 
     @Transactional
@@ -72,6 +78,9 @@ public class DeleteTweetUseCase
             mediaRepository.deleteByTweetId(tweet.getId());
             relationshipRepository.deleteLikesByTweetId(tweet.getId());
             tweetEditRepository.deleteByTweetId(tweet.getId());
+            mentionRepository.deleteByTweetId(tweet.getId());
+            bookmarkRepository.deleteByTweetId(tweet.getId());
+            pollRepository.deleteByTweetId(tweet.getId());
 
             TweetModel deletedTweet =
                     tweetRepository.findById(tweet.getId())
@@ -108,9 +117,12 @@ public class DeleteTweetUseCase
                 .retweetCount(tweetRepository.countRetweetsByTweetId(tweet.getId()))
                 .build();
 
+        // The tweet is being soft-deleted and its poll rows were removed in
+        // the cascade above, so the response carries no poll.
         return TweetMapper.toResponse(
                 enrichedTweet,
                 authorSummary,
+                null,
                 null,
                 null,
                 null,
