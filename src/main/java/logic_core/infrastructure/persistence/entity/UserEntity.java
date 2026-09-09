@@ -39,4 +39,11 @@ public class UserEntity extends MutableEntity {
     @Column(name = "is_active", nullable = false)
     @ColumnDefault("true")
     private boolean isActive = true;
+
+    @Column(name = "email_verified", nullable = false)
+    @ColumnDefault("false")
+    private boolean emailVerified = false;
+
+    @Column(name = "pending_email")
+    private String pendingEmail;
 }

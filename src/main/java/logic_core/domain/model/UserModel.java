@@ -23,9 +23,17 @@ public class UserModel
     private String avatarUrl;
     private String bannerUrl;
 
+    /** Blue-badge / account markers. */
     private boolean verified;
     private boolean active;
     private boolean deleted;
+
+    /** Issue #20: email ownership verification state. */
+    private boolean emailVerified;
+
+    /** Issue #20: new email awaiting ownership verification; the old email
+     *  stays authoritative until a successful confirmation. */
+    private String pendingEmail;
 
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
@@ -51,6 +59,8 @@ public class UserModel
                 .verified(false)
                 .active(true)
                 .deleted(false)
+                .emailVerified(false)
+                .pendingEmail(null)
                 .createdAt(now)
                 .updatedAt(now)
                 .build();

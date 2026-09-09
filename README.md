@@ -295,7 +295,33 @@ mvn -q compile javafx:run
 
 Repeat this command in additional terminals to simulate multiple concurrent users.
 
-### 3. Optional: Redis cache (V2.1 #19)
+### 3. Email delivery
+
+Outbound email is used by the password-reset, email-verification and
+email-change flows. The provider is environment-driven and credentials are
+never committed:
+
+* `EMAIL_PROVIDER` — `log` (default) prints rendered email bodies to the
+  console for local development, with zero credentials and no network.
+  Set to `resend` for real delivery.
+* `EMAIL_FROM` — sender address. On the Resend free tier without a verified
+  custom domain, this must be the account owner's own `onboarding@resend.dev`
+  test sender; with a verified domain later, only this value changes.
+* `RESEND_API_KEY` — Resend outbound API key (required when
+  `EMAIL_PROVIDER=resend`).
+* `RESEND_API_URL` — defaults to `https://api.resend.com/emails`.
+
+Email operations are rate limited per subject (password reset:
+3/15 min per address; verification: 3/10 min per user; email change:
+3/15 min per user — overridable via `app.email.rate-limit.*`). The in-memory
+limiter is the default; when `APP_CACHE_ENABLED=true` the Redis-backed
+fail-open limiter is used instead.
+
+Delivery is asynchronous and strictly after the database commit: a
+rolled-back operation never sends an email, and provider failures never
+break the request or expose credentials/OTPs.
+
+### 4. Optional: Redis cache
 
 The backend supports an opt-in Redis caching layer for three read paths:
 

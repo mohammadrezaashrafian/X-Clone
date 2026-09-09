@@ -1,0 +1,9 @@
+{appName} — Verify your email
+
+Please confirm that {email} belongs to you.
+
+Your verification code is: {code}
+
+This code expires in {expiresInMinutes} minutes.
+
+If you did not request this code, you can safely ignore this email.
