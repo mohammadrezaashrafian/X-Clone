@@ -1,6 +1,8 @@
 package logic_core.app.usecase.User;
 
 import jakarta.transaction.Transactional;
+import logic_core.app.cache.CacheInvalidation;
+import logic_core.app.cache.CacheKeys;
 import logic_core.app.dto.request.DeleteAccountRequest;
 import logic_core.app.security.AuthLockOrchestrator;
 import logic_core.app.security.SessionUserContext;
@@ -21,6 +23,7 @@ public class DeleteAccountUseCase
     @NonNull private final UserRepository repository;
     @NonNull private final AuthLockOrchestrator lockOrchestrator;
     @NonNull private final TimeProvider timeProvider;
+    @NonNull private final CacheInvalidation cacheInvalidation;
 
     @Transactional
     public Result<Void> execute(DeleteAccountRequest request)
@@ -52,6 +55,8 @@ public class DeleteAccountUseCase
             user.setUpdatedAt(timeProvider.now());
 
             repository.update(user);
+
+            cacheInvalidation.evictAfterCommit(CacheKeys.userProfile(user.getId()));
 
             return Result.success(null);
         }

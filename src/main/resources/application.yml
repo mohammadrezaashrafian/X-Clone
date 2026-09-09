@@ -15,3 +15,44 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+
+  # Redis cache (V2.1 #19). All values are environment-driven; no secrets are
+  # committed. Connection failures are handled gracefully (see RedisCacheService):
+  # cache-backed reads fall back to PostgreSQL, so the application stays correct
+  # even when Redis is unreachable.
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2s
+      connect-timeout: 2s
+
+# Application cache switch (V2.1 #19). Caching is opt-in per environment;
+# the integration-test classpath disables it (src/test/resources/application.yml).
+app:
+  cache:
+    enabled: ${APP_CACHE_ENABLED:false}
+
+  # Email delivery (Issue #20). Provider is environment-driven; credentials
+  # are NEVER committed. Default 'log' provider works locally without any
+  # credentials (prints to stdout, dev/test only). Set EMAIL_PROVIDER=resend
+  # plus RESEND_API_KEY for real delivery through the Resend REST API.
+  # On the free tier without a verified domain, EMAIL_FROM must be the
+  # account owner's own 'onboarding@resend.dev' test sender.
+  email:
+    provider: ${EMAIL_PROVIDER:log}
+    from: ${EMAIL_FROM:X-Clone <onboarding@resend.dev>}
+    resend:
+      api-url: ${RESEND_API_URL:https://api.resend.com/emails}
+      api-key: ${RESEND_API_KEY:}
+    rate-limit:
+      password-reset:
+        max: 3
+        window-minutes: 15
+      verification:
+        max: 3
+        window-minutes: 10
+      email-change:
+        max: 3
+        window-minutes: 15

@@ -1,5 +1,7 @@
 package logic_core.app.usecase.User;
 
+import logic_core.app.cache.CacheInvalidation;
+import logic_core.app.cache.CacheKeys;
 import logic_core.app.dto.request.UpdateCompleteProfileRequest;
 import logic_core.app.dto.response.ProfileInfoResponse;
 import logic_core.app.dto.response.UpdateCompleteProfileResponse;
@@ -31,6 +33,7 @@ public class UpdateCompleteProfileUseCase
     @NonNull private final MediaStorageService mediaStorageService;
     @NonNull private final UserValidator userValidator;
     @NonNull private final UserPolicy userPolicy;
+    @NonNull private final CacheInvalidation cacheInvalidation;
 
     public Result<UpdateCompleteProfileResponse> execute(UpdateCompleteProfileRequest request)
     {
@@ -96,6 +99,8 @@ public class UpdateCompleteProfileUseCase
                     user.isVerified(),
                     OffsetDateTime.now()
             );
+
+            cacheInvalidation.evictAfterCommit(CacheKeys.userProfile(user.getId()));
 
             return Result.success(new UpdateCompleteProfileResponse(profile)
             );

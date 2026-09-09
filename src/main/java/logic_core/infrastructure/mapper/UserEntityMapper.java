@@ -28,6 +28,8 @@ public final class UserEntityMapper
                 .verified(entity.isVerified())
                 .active(entity.isActive())
                 .deleted(entity.isDeleted())
+                .emailVerified(entity.isEmailVerified())
+                .pendingEmail(entity.getPendingEmail())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -61,6 +63,8 @@ public final class UserEntityMapper
         entity.setBannerUrl(model.getBannerUrl());
         entity.setVerified(model.isVerified());
         entity.setActive(model.isActive());
+        entity.setEmailVerified(model.isEmailVerified());
+        entity.setPendingEmail(model.getPendingEmail());
         if (model.isDeleted()) {
             entity.markDeleted();
         }

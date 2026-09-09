@@ -1,6 +1,8 @@
 package logic_core.app.usecase.User;
 
 
+import logic_core.app.cache.CacheInvalidation;
+import logic_core.app.cache.CacheKeys;
 import logic_core.app.dto.request.UpdateAvatarRequest;
 import logic_core.app.dto.response.UpdateAvatarResponse;
 import logic_core.app.dto.validator.UserValidator;
@@ -27,6 +29,7 @@ public class UpdateAvatarUseCase
     @NonNull private final UserValidator userValidator;
     @NonNull private final UserPolicy userPolicy;
     @NonNull private final MediaStorageService mediaStorageService;
+    @NonNull private final CacheInvalidation cacheInvalidation;
 
     public Result<UpdateAvatarResponse> execute(UpdateAvatarRequest request)
     {
@@ -53,6 +56,8 @@ public class UpdateAvatarUseCase
             {
                 mediaStorageService.delete(oldAvatar);
             }
+
+            cacheInvalidation.evictAfterCommit(CacheKeys.userProfile(user.getId()));
 
             return Result.success(new UpdateAvatarResponse(user.getId(), newAvatarUrl));
 

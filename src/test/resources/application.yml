@@ -34,3 +34,11 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+
+# Cache disabled by default for the full suite (V2.1 #19): the suite runs without a
+# Redis server, and the no-op CacheService keeps every existing integration test
+# byte-for-byte unchanged. Dedicated cache tests enable it via @DynamicPropertySource
+# (embedded-Redis or dead-port/fallback scenarios).
+app:
+  cache:
+    enabled: false

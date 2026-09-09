@@ -47,7 +47,20 @@ public class AuthLockOrchestrator
         return new SessionUserContext(lockedUser, null);
     }
 
-    @Transactional
+    /**
+     * Locks the user row identified by {@code username}.
+     *
+     * <p>{@code noRollbackFor = NotFoundException.class} (Issue #21): this method
+     * performs only a {@code SELECT ... FOR UPDATE} and writes nothing, so a
+     * missing user must not mark the caller's shared transaction rollback-only.
+     * {@link logic_core.app.usecase.auth.LoginUserUseCase} catches the
+     * {@code NotFoundException} to return its anti-enumeration generic failure;
+     * without this rule the outer login transaction would fail to commit with a
+     * spurious {@code UnexpectedRollbackException} (surfacing as HTTP 500) after
+     * the exception had been handled. Only this lookup is exempted — the
+     * token-based context methods keep strict rollback semantics.
+     */
+    @Transactional(noRollbackFor = NotFoundException.class)
     public SessionUserContext lockAndGetUserByUsername(String username)
     {
         UserModel lockedUser = userRepository.findByUsernameForUpdate(username)

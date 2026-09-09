@@ -1,5 +1,9 @@
 package logic_core.app.usecase.tweet;
 
+import logic_core.app.cache.CacheJsonCodec;
+import logic_core.app.cache.CacheKeys;
+import logic_core.app.cache.CachePolicy;
+import logic_core.app.cache.CacheService;
 import logic_core.app.dto.request.GetTweetRequest;
 import logic_core.app.dto.timeline.TimelineTweet;
 import logic_core.app.security.AuthLockOrchestrator;
@@ -9,6 +13,8 @@ import logic_core.common.result.Result;
 import logic_core.domain.repository.TweetRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -27,8 +33,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class GetTweetUseCase
 {
+    private static final Logger log = LoggerFactory.getLogger(GetTweetUseCase.class);
+
     @NonNull private final TweetRepository tweetRepository;
     @NonNull private final AuthLockOrchestrator lockOrchestrator;
+    @NonNull private final CacheService cacheService;
+    @NonNull private final CacheJsonCodec cacheJsonCodec;
 
     public Result<TimelineTweet> execute(GetTweetRequest request)
     {
@@ -43,9 +53,35 @@ public class GetTweetUseCase
 
             UUID actorId = context.lockedUser().getId();
 
-            return tweetRepository.findSingleTweet(actorId, request.tweetId())
-                    .map(Result::success)
-                    .orElseGet(() -> Result.failure("Tweet not found or deleted."));
+            // Actor-scoped key: visibility (block/mute) is evaluated per viewer
+            // inside the repository query, so a cached entry is only valid for
+            // the actor it was loaded for. (V2.1 #19)
+            String cacheKey = CacheKeys.tweet(actorId, request.tweetId());
+
+            String cached = cacheService.get(cacheKey);
+            if (cached != null)
+            {
+                TimelineTweet cachedTweet = safeFromJson(cached, cacheKey);
+                if (cachedTweet != null)
+                {
+                    return Result.success(cachedTweet);
+                }
+            }
+
+            TimelineTweet tweet = tweetRepository.findSingleTweet(actorId, request.tweetId())
+                    .orElseGet(() -> {
+                        cacheService.evict(cacheKey);
+                        return null;
+                    });
+
+            if (tweet == null)
+            {
+                return Result.failure("Tweet not found or deleted.");
+            }
+
+            cacheService.put(cacheKey, cacheJsonCodec.toJson(tweet), CachePolicy.TWEET);
+
+            return Result.success(tweet);
         }
         catch (AppException e)
         {
@@ -54,6 +90,24 @@ public class GetTweetUseCase
         catch (Exception e)
         {
             return Result.failure("Failed to load tweet.");
+        }
+    }
+
+    /**
+     * Returns null (treating the entry as a miss) when a cached value cannot
+     * be decoded, so corrupt cache data can never turn a healthy database read
+     * into a failure response.
+     */
+    private TimelineTweet safeFromJson(String json, String cacheKey)
+    {
+        try
+        {
+            return cacheJsonCodec.fromJson(json, TimelineTweet.class);
+        }
+        catch (RuntimeException e)
+        {
+            log.warn("Discarding unreadable cached tweet for key {}: {}", cacheKey, e.toString());
+            return null;
         }
     }
 }

@@ -295,6 +295,55 @@ mvn -q compile javafx:run
 
 Repeat this command in additional terminals to simulate multiple concurrent users.
 
+### 3. Email delivery
+
+Outbound email is used by the password-reset, email-verification and
+email-change flows. The provider is environment-driven and credentials are
+never committed:
+
+* `EMAIL_PROVIDER` — `log` (default) prints rendered email bodies to the
+  console for local development, with zero credentials and no network.
+  Set to `resend` for real delivery.
+* `EMAIL_FROM` — sender address. On the Resend free tier without a verified
+  custom domain, this must be the account owner's own `onboarding@resend.dev`
+  test sender; with a verified domain later, only this value changes.
+* `RESEND_API_KEY` — Resend outbound API key (required when
+  `EMAIL_PROVIDER=resend`).
+* `RESEND_API_URL` — defaults to `https://api.resend.com/emails`.
+
+Email operations are rate limited per subject (password reset:
+3/15 min per address; verification: 3/10 min per user; email change:
+3/15 min per user — overridable via `app.email.rate-limit.*`). The in-memory
+limiter is the default; when `APP_CACHE_ENABLED=true` the Redis-backed
+fail-open limiter is used instead.
+
+Delivery is asynchronous and strictly after the database commit: a
+rolled-back operation never sends an email, and provider failures never
+break the request or expose credentials/OTPs.
+
+### 4. Optional: Redis cache
+
+The backend supports an opt-in Redis caching layer for three read paths:
+
+* `USER_GET_PROFILE` — public profile projections
+* `TWEET_GET` — single-tweet read projections (scoped per authenticated viewer)
+* `TRENDING_HASHTAGS` — the global 24h trending ranking
+
+PostgreSQL remains the source of truth. Enable caching with
+`APP_CACHE_ENABLED=true` and point Redis at the instance via `REDIS_HOST` /
+`REDIS_PORT` / `REDIS_PASSWORD` (defaults: `localhost:6379`, no password).
+Redis connection failures are logged and counted, never fatal: cache-backed
+reads fall back to PostgreSQL.
+
+Cache keys are namespaced as `xc:user:profile:{userId}`, `xc:tweet:{actorId}:{tweetId}`
+and `xc:trending:hashtags:{limit}` (see `CacheKeys`). Every entry expires
+(60s TTL, see `CachePolicy`); profile and tweet content mutations evict their
+entries immediately after the database commit.
+
+Integration tests run against a real Redis server bundled by the test
+classpath (no Docker required) or verify dead-port fallback; swap the test
+Redis bootstrap for Testcontainers without touching test assertions.
+
 ## 8. Usage Guide
 
 1. **Register** a new account from the client's registration screen (unique username, email,
@@ -342,6 +391,7 @@ original V1 codebase.
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **V1**  | Original client–server architecture developed as the Advanced Programming final project, including authentication, tweets, timeline, social graph, hashtags, polls, direct messaging, and notifications.                                                                       |
 | **V2**  | Ongoing independent development by **Alireza Heydari**. Migrated the backend to Spring Boot and Spring Data JPA, introduced Spring dependency injection and repository adapters, modernized the persistence architecture, and removed the legacy server/shared infrastructure. |
+| **V2.1** | Advanced features: hashtags, bookmarks, polls, media, notifications, search, trending foundation, milestone integration coverage, and an opt-in Redis caching layer (V2.1 #19). |
 
 ## 12. Contact
 

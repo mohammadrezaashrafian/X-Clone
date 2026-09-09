@@ -15,6 +15,7 @@ import logic_core.infrastructure.transport.RequestType;
 import logic_core.infrastructure.transport.ResponseEnvelope;
 import logic_core.infrastructure.transport.ResponseType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BiFunction;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class RequestDispatcher
@@ -55,7 +57,10 @@ public class RequestDispatcher
                  AUTH_REFRESH,
                  AUTH_REQUEST_PASSWORD_RESET,
                  AUTH_VERIFY_PASSWORD_RESET_CODE,
-                 AUTH_RESET_PASSWORD ->
+                 AUTH_RESET_PASSWORD,
+                 EMAIL_VERIFY_REQUEST,
+                 EMAIL_VERIFY_CONFIRM,
+                 EMAIL_CHANGE_CONFIRM ->
 
                     dispatchAuth(request);
 
@@ -212,13 +217,19 @@ public class RequestDispatcher
         }
         catch (Exception e)
         {
+            // Issue #21 security baseline: this catch-all handles unexpected
+            // infrastructure failures, which may carry SQL/schema details or
+            // internal class names. The client always receives the generic
+            // message; the raw exception is logged server-side with its stack
+            // trace for diagnosis. The UNEXPECTED_ERROR code is unchanged
+            // (existing transport contract and tests are preserved).
+            log.error("Unhandled dispatch failure for request type={}",
+                    requestType, e);
             return failureResponse(
                     requestId,
                     ResponseType.BAD_REQUEST,
                     "UNEXPECTED_ERROR",
-                    e.getMessage() != null
-                            ? e.getMessage()
-                            : "Unexpected server error"
+                    "Unexpected server error"
             );
         }
     }
@@ -247,6 +258,12 @@ public class RequestDispatcher
                         case AUTH_VERIFY_PASSWORD_RESET_CODE -> handelVerifyPasswordResetCode(requestId, payload, facade);
 
                         case AUTH_RESET_PASSWORD -> handelResetPassword(requestId, payload, facade);
+
+                        case EMAIL_VERIFY_REQUEST -> handleEmailVerificationRequest(requestId, payload, facade);
+
+                        case EMAIL_VERIFY_CONFIRM -> handleEmailVerificationConfirm(requestId, payload, facade);
+
+                        case EMAIL_CHANGE_CONFIRM -> handleEmailChangeConfirm(requestId, payload, facade);
 
                         default -> throw new IllegalArgumentException("Unsupported tweet request: " + request.type());
                     };
@@ -829,6 +846,93 @@ public class RequestDispatcher
         return successResponse(
                 requestId,
                 ResponseType.AUTH_RESET_PASSWORD_RESPONSE,
+                result.getData()
+        );
+    }
+
+    private ResponseEnvelope handleEmailVerificationRequest(
+            UUID requestId,
+            JsonElement payload,
+            AuthFacade authFacade
+    )
+    {
+        RequestEmailVerificationRequest request =
+                gson.fromJson(payload, RequestEmailVerificationRequest.class);
+
+        Result<EmailVerificationRequestResponse> result =
+                authFacade.requestEmailVerification(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.EMAIL_VERIFY_REQUEST_RESPONSE,
+                    "EMAIL_VERIFY_REQUEST_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.EMAIL_VERIFY_REQUEST_RESPONSE,
+                result.getData()
+        );
+    }
+
+    private ResponseEnvelope handleEmailVerificationConfirm(
+            UUID requestId,
+            JsonElement payload,
+            AuthFacade authFacade
+    )
+    {
+        ConfirmEmailVerificationRequest request =
+                gson.fromJson(payload, ConfirmEmailVerificationRequest.class);
+
+        Result<EmailVerificationConfirmResponse> result =
+                authFacade.confirmEmailVerification(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.EMAIL_VERIFY_CONFIRM_RESPONSE,
+                    "EMAIL_VERIFY_CONFIRM_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.EMAIL_VERIFY_CONFIRM_RESPONSE,
+                result.getData()
+        );
+    }
+
+    private ResponseEnvelope handleEmailChangeConfirm(
+            UUID requestId,
+            JsonElement payload,
+            AuthFacade authFacade
+    )
+    {
+        ConfirmEmailChangeRequest request =
+                gson.fromJson(payload, ConfirmEmailChangeRequest.class);
+
+        Result<EmailChangeConfirmResponse> result =
+                authFacade.confirmEmailChange(request);
+
+        if (result.isFailure())
+        {
+            return failureResponse(
+                    requestId,
+                    ResponseType.EMAIL_CHANGE_CONFIRM_RESPONSE,
+                    "EMAIL_CHANGE_CONFIRM_FAILED",
+                    result.getError()
+            );
+        }
+
+        return successResponse(
+                requestId,
+                ResponseType.EMAIL_CHANGE_CONFIRM_RESPONSE,
                 result.getData()
         );
     }
@@ -2528,6 +2632,9 @@ public class RequestDispatcher
             case AUTH_REQUEST_PASSWORD_RESET -> ResponseType.AUTH_REQUEST_PASSWORD_RESET_RESPONSE;
             case AUTH_VERIFY_PASSWORD_RESET_CODE -> ResponseType.AUTH_VERIFY_PASSWORD_RESET_CODE_RESPONSE;
             case AUTH_RESET_PASSWORD -> ResponseType.AUTH_RESET_PASSWORD_RESPONSE;
+            case EMAIL_VERIFY_REQUEST -> ResponseType.EMAIL_VERIFY_REQUEST_RESPONSE;
+            case EMAIL_VERIFY_CONFIRM -> ResponseType.EMAIL_VERIFY_CONFIRM_RESPONSE;
+            case EMAIL_CHANGE_CONFIRM -> ResponseType.EMAIL_CHANGE_CONFIRM_RESPONSE;
             case CONVERSATION_CREATE ->ResponseType.CONVERSATION_CREATE_RESPONSE;
             case CONVERSATION_GET -> ResponseType.CONVERSATION_GET_RESPONSE;
             case MEMBER_ADD -> ResponseType.CONVERSATION_ADD_MEMBER_RESPONSE;

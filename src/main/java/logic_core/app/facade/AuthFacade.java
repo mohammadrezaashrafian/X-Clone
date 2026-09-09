@@ -18,6 +18,9 @@ public class AuthFacade
     private final RequestPasswordResetUseCase requestPasswordResetUseCase;
     private final VerifyPasswordResetCodeUseCase verifyPasswordResetCodeUseCase;
     private final ResetPasswordUseCase resetPasswordUseCase;
+    private final RequestEmailVerificationUseCase requestEmailVerificationUseCase;
+    private final ConfirmEmailVerificationUseCase confirmEmailVerificationUseCase;
+    private final ConfirmEmailChangeUseCase confirmEmailChangeUseCase;
 
     public Result<AuthResponse> register(RegisterRequest request)
     {
@@ -58,5 +61,26 @@ public class AuthFacade
     )
     {
         return resetPasswordUseCase.execute(request);
+    }
+
+    public Result<EmailVerificationRequestResponse> requestEmailVerification(
+            RequestEmailVerificationRequest request
+    )
+    {
+        return requestEmailVerificationUseCase.execute(request);
+    }
+
+    public Result<EmailVerificationConfirmResponse> confirmEmailVerification(
+            ConfirmEmailVerificationRequest request
+    )
+    {
+        return confirmEmailVerificationUseCase.execute(request);
+    }
+
+    public Result<EmailChangeConfirmResponse> confirmEmailChange(
+            ConfirmEmailChangeRequest request
+    )
+    {
+        return confirmEmailChangeUseCase.execute(request);
     }
 }
