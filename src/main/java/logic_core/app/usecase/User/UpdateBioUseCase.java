@@ -1,6 +1,8 @@
 package logic_core.app.usecase.User;
 
 
+import logic_core.app.cache.CacheInvalidation;
+import logic_core.app.cache.CacheKeys;
 import logic_core.app.dto.request.UpdateBioRequest;
 import logic_core.app.dto.response.UpdateBioResponse;
 import logic_core.app.dto.validator.UserValidator;
@@ -25,6 +27,7 @@ public class UpdateBioUseCase
     @NonNull  private final UserRepository userRepository;
     @NonNull  private final UserValidator userValidator;
     @NonNull private final UserPolicy userPolicy;
+    @NonNull private final CacheInvalidation cacheInvalidation;
 
     public Result<UpdateBioResponse> execute(UpdateBioRequest request)
     {
@@ -40,6 +43,8 @@ public class UpdateBioUseCase
             user.setUpdatedAt(OffsetDateTime.now());
 
             userRepository.update(user);
+
+            cacheInvalidation.evictAfterCommit(CacheKeys.userProfile(user.getId()));
 
             return Result.success(new UpdateBioResponse(
                     user.getId(),

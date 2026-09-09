@@ -1,6 +1,8 @@
 package logic_core.app.usecase.User;
 
 import jakarta.transaction.Transactional;
+import logic_core.app.cache.CacheInvalidation;
+import logic_core.app.cache.CacheKeys;
 import logic_core.app.dto.request.UpdateEmailRequest;
 import logic_core.app.dto.validator.EmailValidator;
 import logic_core.app.security.AuthLockOrchestrator;
@@ -22,6 +24,7 @@ public class UpdateEmailUseCase
     @NonNull private final UserRepository repository;
     @NonNull private final AuthLockOrchestrator lockOrchestrator;
     @NonNull private final EmailValidator emailValidator;
+    @NonNull private final CacheInvalidation cacheInvalidation;
 
     @Transactional
     public Result<Void> execute(UpdateEmailRequest request)
@@ -57,6 +60,8 @@ public class UpdateEmailUseCase
             user.setUpdatedAt(OffsetDateTime.now());
 
             repository.update(user);
+
+            cacheInvalidation.evictAfterCommit(CacheKeys.userProfile(user.getId()));
 
             return Result.success(null);
         }

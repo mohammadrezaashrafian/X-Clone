@@ -1,6 +1,8 @@
 package logic_core.app.usecase.tweet;
 
 import jakarta.transaction.Transactional;
+import logic_core.app.cache.CacheInvalidation;
+import logic_core.app.cache.CacheKeys;
 import logic_core.app.dto.request.EditTweetRequest;
 import logic_core.app.dto.response.MediaResponse;
 import logic_core.app.dto.response.PollResponse;
@@ -39,6 +41,7 @@ public class EditTweetUseCase
     @NonNull private final MediaRepository mediaRepository;
     @NonNull private final RelationshipRepository relationshipRepository;
     @NonNull private final PollRepository pollRepository;
+    @NonNull private final CacheInvalidation cacheInvalidation;
 
     @Transactional
     public Result<TweetResponse> execute(EditTweetRequest request)
@@ -76,6 +79,9 @@ public class EditTweetUseCase
             TweetModel savedTweet = tweetRepository.findById(tweet.getId())
                     .orElseThrow(() -> new RuntimeException("Failed to reload edited tweet."));
 
+            // Invalidate the single-tweet cache for ALL viewers of this tweet
+            // (pattern match) after the transaction commits. (V2.1 #19)
+            cacheInvalidation.evictByPatternAfterCommit(CacheKeys.tweetPattern(tweet.getId()));
 
             return Result.success(buildTweetResponse(savedTweet));
         }

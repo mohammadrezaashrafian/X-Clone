@@ -1,6 +1,8 @@
 package logic_core.app.usecase.tweet;
 
 import org.springframework.transaction.annotation.Transactional;
+import logic_core.app.cache.CacheInvalidation;
+import logic_core.app.cache.CacheKeys;
 import logic_core.app.dto.request.DeleteTweetRequest;
 import logic_core.app.dto.response.TweetResponse;
 import logic_core.app.dto.response.UserSummaryResponse;
@@ -43,6 +45,7 @@ public class DeleteTweetUseCase
     @NonNull private final BookmarkRepository bookmarkRepository;
     @NonNull private final PollRepository pollRepository;
     @NonNull private final AuthLockOrchestrator lockOrchestrator;
+    @NonNull private final CacheInvalidation cacheInvalidation;
 
     @Transactional
     public Result<TweetResponse> execute(DeleteTweetRequest request)
@@ -91,6 +94,10 @@ public class DeleteTweetUseCase
             TweetResponse response =
                     buildDeletedResponse(deletedTweet);
 
+            // Invalidate the single-tweet cache for ALL viewers of this tweet
+            // (pattern match) after the transaction commits; a deleted tweet
+            // must never keep being served from cache. (V2.1 #19)
+            cacheInvalidation.evictByPatternAfterCommit(CacheKeys.tweetPattern(tweet.getId()));
 
             return Result.success(response);
         }

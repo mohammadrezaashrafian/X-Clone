@@ -1,6 +1,8 @@
 package logic_core.app.usecase.User;
 
 
+import logic_core.app.cache.CacheInvalidation;
+import logic_core.app.cache.CacheKeys;
 import logic_core.app.dto.request.UpdateBannerRequest;
 import logic_core.app.dto.response.UpdateBannerResponse;
 import logic_core.app.dto.validator.UserValidator;
@@ -27,6 +29,7 @@ public class UpdateBannerUseCase
     @NonNull private final UserValidator userValidator;
     @NonNull private final UserPolicy userPolicy;
     @NonNull private final MediaStorageService mediaStorageService;
+    @NonNull private final CacheInvalidation cacheInvalidation;
 
     public Result<UpdateBannerResponse> execute(UpdateBannerRequest request)
     {
@@ -61,6 +64,8 @@ public class UpdateBannerUseCase
 
                 }
             }
+
+            cacheInvalidation.evictAfterCommit(CacheKeys.userProfile(user.getId()));
 
             return Result.success(new UpdateBannerResponse(user.getId(), newBannerUrl));
 

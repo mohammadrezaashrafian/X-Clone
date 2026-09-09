@@ -15,3 +15,21 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+
+  # Redis cache (V2.1 #19). All values are environment-driven; no secrets are
+  # committed. Connection failures are handled gracefully (see RedisCacheService):
+  # cache-backed reads fall back to PostgreSQL, so the application stays correct
+  # even when Redis is unreachable.
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2s
+      connect-timeout: 2s
+
+# Application cache switch (V2.1 #19). Caching is opt-in per environment;
+# the integration-test classpath disables it (src/test/resources/application.yml).
+app:
+  cache:
+    enabled: ${APP_CACHE_ENABLED:false}
