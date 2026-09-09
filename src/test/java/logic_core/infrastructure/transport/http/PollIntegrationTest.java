@@ -39,6 +39,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.net.ServerSocket;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -357,6 +358,45 @@ class PollIntegrationTest
         vote(voterC, pollId, optionY);
 
         assertThat(countVoteRowsForPoll(pollId)).isEqualTo(3L);
+    }
+
+    @Test
+    void vote_afterExpiry_isRejected_andResponseFlagsExpired() throws Exception
+    {
+        AuthResponse author = registerUser("pol");
+        AuthResponse voter = registerUser("pol");
+
+        PollRequest pollRequest = new PollRequest("Expiring?", List.of("A", "B"), 60);
+        TweetResponse tweet = createTweet(author, "expiry-poll-1", pollRequest);
+
+        UUID pollId = tweet.poll().pollId();
+        UUID optionA = tweet.poll().options().get(0).optionId();
+
+        // Pin the poll into the past so expiry is deterministic regardless of
+        // when the test runs (same JDBC timestamp pattern used elsewhere).
+        jdbcTemplate.update(
+                "UPDATE polls SET expires_at = ? WHERE id = ?",
+                OffsetDateTime.now().minusMinutes(1),
+                pollId);
+
+        // Voting after expiry is rejected with the existing error contract.
+        ResponseEnvelope response = send(new RequestEnvelope(
+                UUID.randomUUID(),
+                RequestType.POLL_VOTE,
+                gson.toJsonTree(new VotePollRequest(pollId, optionA, voter.token())),
+                null));
+        assertThat(response.isSuccess()).isFalse();
+        assertThat(response.errorCode()).isEqualTo("POLL_VOTE_FAILED");
+        assertThat(response.errorMessage()).containsIgnoringCase("expired");
+
+        // No vote row was persisted for the rejected vote.
+        assertThat(countVoteRowsForPoll(pollId)).isZero();
+
+        // Reads expose the expired state on the poll.
+        TimelineTweet single = getSingleTweet(author.token(), tweet.id());
+        assertThat(single.poll()).isNotNull();
+        assertThat(single.poll().pollId()).isEqualTo(pollId);
+        assertThat(single.poll().expired()).isTrue();
     }
 
     // ========================================================================

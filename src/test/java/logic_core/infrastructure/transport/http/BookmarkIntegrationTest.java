@@ -7,6 +7,7 @@ import logic_core.app.dto.request.CreateTweetRequest;
 import logic_core.app.dto.request.DeleteTweetRequest;
 import logic_core.app.dto.request.GetBookmarksRequest;
 import logic_core.app.dto.request.GetIsBookmarkedRequest;
+import logic_core.app.dto.request.MuteUserRequest;
 import logic_core.app.dto.request.RegisterRequest;
 import logic_core.app.dto.request.UnbookmarkTweetRequest;
 import logic_core.app.dto.response.AuthResponse;
@@ -366,6 +367,30 @@ class BookmarkIntegrationTest
         assertThat(afterBlock.tweets()).isEmpty();
     }
 
+    @Test
+    void getBookmarks_respectsMutedVisibility() throws Exception
+    {
+        AuthResponse author = registerUser("bmt");
+        AuthResponse reader = registerUser("bmu");
+
+        TweetResponse tweet = createTweet(author, "bm-mute-1");
+        bookmark(reader, tweet.id());
+
+        // Baseline: the bookmark is listed before muting.
+        GetBookmarksResponse before = getBookmarks(reader.token(), 0, 20);
+        assertThat(before.totalItems()).isEqualTo(1);
+        assertThat(before.tweets().get(0).tweetId()).isEqualTo(tweet.id());
+
+        // Viewer mutes the author: the bookmarked tweet becomes invisible,
+        // while the bookmark row itself is untouched (ownership preserved).
+        mute(reader, author.userId());
+
+        GetBookmarksResponse after = getBookmarks(reader.token(), 0, 20);
+        assertThat(after.totalItems()).isZero();
+        assertThat(after.tweets()).isEmpty();
+        assertThat(countBookmarkRows(reader.userId(), tweet.id())).isEqualTo(1L);
+    }
+
     // ========================================================================
     // Auth + migration
     // ========================================================================
@@ -517,6 +542,16 @@ class BookmarkIntegrationTest
                 gson.toJsonTree(new BlockUserRequest(blockedId, blocker.token())),
                 null));
         assertSuccess(envelope, "block " + blockedId);
+    }
+
+    private void mute(AuthResponse muter, UUID mutedId) throws Exception
+    {
+        ResponseEnvelope envelope = send(new RequestEnvelope(
+                UUID.randomUUID(),
+                RequestType.RELATION_MUTE,
+                gson.toJsonTree(new MuteUserRequest(mutedId, muter.token())),
+                null));
+        assertSuccess(envelope, "mute " + mutedId);
     }
 
     private long countBookmarkRows(UUID userId, UUID tweetId)

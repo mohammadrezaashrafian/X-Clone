@@ -6,6 +6,7 @@ import logic_core.app.dto.request.CreateTweetRequest;
 import logic_core.app.dto.request.DeleteTweetRequest;
 import logic_core.app.dto.request.FollowHashtagRequest;
 import logic_core.app.dto.request.GetHashtagTweetsRequest;
+import logic_core.app.dto.request.MuteUserRequest;
 import logic_core.app.dto.request.RegisterRequest;
 import logic_core.app.dto.request.ReplyTweetRequest;
 import logic_core.app.dto.request.UnfollowHashtagRequest;
@@ -268,6 +269,30 @@ class HashtagIntegrationTest
         assertThat(response.hasNext()).isFalse();
     }
 
+    @Test
+    void hashtagFeed_excludesMutedAuthor() throws Exception
+    {
+        AuthResponse viewer = registerUser("hasn");
+        AuthResponse author = registerUser("haso");
+
+        TweetResponse visible = createTweet(author, "#mutedfeed post");
+
+        // Baseline: the tagged tweet is visible before muting.
+        HashtagTweetsResponse before =
+                getHashtagTweets("mutedfeed", 0, 20, viewer.token());
+        assertThat(before.totalItems()).isEqualTo(1);
+        assertThat(before.tweets().get(0).tweetId()).isEqualTo(visible.id());
+
+        // Viewer mutes the author: the tweet disappears from the hashtag feed.
+        mute(viewer, author.userId());
+
+        HashtagTweetsResponse after =
+                getHashtagTweets("mutedfeed", 0, 20, viewer.token());
+        assertThat(after.totalItems()).isZero();
+        assertThat(after.tweets()).isEmpty();
+        assertThat(after.hasNext()).isFalse();
+    }
+
     // ========================================================================
     // Follow / unfollow
     // ========================================================================
@@ -419,6 +444,16 @@ class HashtagIntegrationTest
                 null));
         assertSuccess(envelope, "block " + blockedId);
         return gson.fromJson(envelope.getData(), BlockActionResponse.class);
+    }
+
+    private void mute(AuthResponse muter, UUID mutedId) throws Exception
+    {
+        ResponseEnvelope envelope = send(new RequestEnvelope(
+                UUID.randomUUID(),
+                RequestType.RELATION_MUTE,
+                gson.toJsonTree(new MuteUserRequest(mutedId, muter.token())),
+                null));
+        assertSuccess(envelope, "mute " + mutedId);
     }
 
     private HashtagFollowResponse followHashtag(String tag, String token) throws Exception
