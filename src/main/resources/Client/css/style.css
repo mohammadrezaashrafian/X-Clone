@@ -1,10 +1,4 @@
-
-.sign-up-link {
-    -fx-text-fill: #555555 !important;
-    -fx-underline: false;
-}
-
-.sign-up-link:hover {
-    -fx-text-fill: #1da1f2 !important;
-    -fx-underline: true;
-}
+/*
+ * style.css - Kept for backward compatibility.
+ * All styles are now loaded from individual CSS files via MainApp.java.
+ */

@@ -1,0 +1,95 @@
+/*
+ * Layout
+ * Structural layout only: page surfaces, the application shell grid, content
+ * area, section headers and scroll panes.
+ *
+ * Visual chrome for navigation lives in components/navigation.css and the
+ * shell composition styles live in views/shell.css.
+ */
+
+/* ==================== PAGE SURFACES ==================== */
+
+.page-surface {
+    -fx-background-color: -ds-surface-muted;
+}
+
+.page-surface-white {
+    -fx-background-color: -ds-surface;
+}
+
+/* ==================== APPLICATION SHELL ==================== */
+
+/*
+ * Root grid: navigation sidebar | content | utility panel.
+ * Each column declares its own width; only the centre column grows.
+ */
+.app-shell {
+    -fx-background-color: -ds-surface;
+    -fx-min-width: 900;
+}
+
+.shell-column-nav {
+    -fx-min-width: 240;
+    -fx-pref-width: 280;
+    -fx-max-width: 300;
+}
+
+.shell-column-utility {
+    -fx-min-width: 290;
+    -fx-pref-width: 330;
+    -fx-max-width: 350;
+}
+
+/* ==================== CONTENT AREA ==================== */
+
+.content-area {
+    -fx-min-width: 450;
+    -fx-pref-width: 1;
+    -fx-hgrow: always;
+}
+
+.content-host {
+    -fx-padding: 0;
+}
+
+/* ==================== SECTION HEADERS ==================== */
+
+.section-title {
+    -fx-padding: 15 20 15 20;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 0 0 1 0;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+    -fx-background-color: -ds-surface;
+}
+
+.section-title-compact {
+    -fx-padding: 10 20 10 20;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 0 0 1 0;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+    -fx-background-color: -ds-surface;
+}
+
+/* ==================== SCROLL PANE ==================== */
+
+.scroll-pane-transparent {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+
+.scroll-pane-surface {
+    -fx-background-color: transparent;
+    -fx-background: -ds-surface-muted;
+}
+
+/* Content scroll areas never scroll horizontally. */
+.scroll-pane-no-hbar {
+    -fx-hbar-policy: never;
+}
+
+/* ==================== GRADIENT BACKGROUNDS ==================== */
+
+

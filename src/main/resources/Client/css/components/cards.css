@@ -1,0 +1,93 @@
+/*
+ * Cards & Surfaces
+ * Reusable content containers, avatars, and dialog shells.
+ *
+ * Containers are built from three primitives: `card-surface` (elevated),
+ * `card-bordered` (separator-only) and `status-card` (bordered block). Use
+ * these instead of one-off background/border/padding declarations.
+ */
+
+/* ==================== CARDS ==================== */
+
+.card-surface {
+    -fx-background-color: -ds-surface;
+    -fx-background-radius: 16;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);
+}
+
+.card-elevated {
+    -fx-background-color: -ds-surface-muted;
+    -fx-background-radius: 16;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 18, 0, 0, 6);
+    -fx-padding: 16;
+}
+
+.card-bordered {
+    -fx-background-color: -ds-surface;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 0 0 1 0;
+}
+
+.bordered-panel {
+    -fx-background-color: -ds-surface;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 0 0 1 0;
+}
+
+.status-card {
+    -fx-background-color: -ds-surface;
+    -fx-border-color: -ds-border-light;
+    -fx-border-radius: 12;
+    -fx-padding: 20;
+}
+
+.soft-form {
+    -fx-background-color: -ds-surface;
+    -fx-background-radius: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 25, 0.5, 0, 10);
+}
+
+/* Generic inner padding for cards and content containers. */
+.padded {
+    -fx-padding: 15;
+}
+
+/* ==================== AVATARS ==================== */
+
+.avatar-circle {
+    -fx-background-radius: 50%;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 3, 0, 0, 1);
+}
+
+.avatar-rounded {
+    -fx-background-radius: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 3, 0, 0, 1);
+}
+
+.avatar-pill {
+    -fx-background-radius: 22.5;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 3, 0, 0, 1);
+}
+
+.avatar-sm {
+    -fx-background-radius: 16;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 3, 0, 0, 1);
+}
+
+/* ==================== DIALOGS ==================== */
+
+.dialog-overlay {
+    -fx-background-color: -ds-surface-overlay;
+}
+
+.dialog-content {
+    -fx-background-color: -ds-surface;
+    -fx-background-radius: 16;
+    -fx-padding: 20;
+}
+
+.dialog-header {
+    -fx-padding: 0 0 10 0;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 0 0 1 0;
+}

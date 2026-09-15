@@ -1,0 +1,104 @@
+/*
+ * Light Theme
+ * Alternative theme for X-Clone application
+ */
+
+.root {
+    /* ==================== COLORS ==================== */
+
+    /* Brand */
+    -ds-brand: #1d9bf0;
+    -ds-brand-hover: #1a8cd8;
+    -ds-brand-pressed: #1478bd;
+    -ds-brand-deep: #002244;
+    -ds-brand-contrast: #ffffff;
+    -ds-brand-subtle: #e8f5fd;
+
+    /* Text */
+    -ds-text-primary: #0f1419;
+    -ds-text-secondary: #536471;
+    -ds-text-muted: #666666;
+    -ds-text-inverse: #ffffff;
+
+    /* Surfaces */
+    -ds-surface: #ffffff;
+    -ds-surface-muted: #f7f9fa;
+    -ds-surface-hover: #f0f2f5;
+    -ds-surface-active: #e8eaed;
+    -ds-surface-overlay: rgba(0, 0, 0, 0.4);
+    -ds-surface-warm: #fcf8f3;
+    -ds-input-bg: rgba(0, 0, 0, 0.04);
+
+    /* Borders */
+    -ds-border-light: #eff3f4;
+    -ds-border: #cfd9de;
+    -ds-border-focus: -ds-brand;
+
+    /* Semantic */
+    -ds-link: #1d9bf0;
+    -ds-success: #28cf69;
+    -ds-success-hover: #22b859;
+    -ds-success-pressed: #1d9e4c;
+    -ds-danger: #d32f2f;
+    -ds-danger-hover: #c62828;
+    -ds-danger-pressed: #b71c1c;
+    -ds-danger-subtle: rgba(211, 47, 47, 0.12);
+    -ds-warning: #f59e0b;
+    -ds-info: #1d9bf0;
+
+    /* Inverse (dark) surface states */
+    -ds-inverse-hover: #1c2938;
+    -ds-inverse-pressed: #131e2b;
+
+    /* ==================== TYPOGRAPHY ==================== */
+
+    -ds-font-xs: 11px;
+    -ds-font-sm: 13px;
+    -ds-font-base: 15px;
+    -ds-font-lg: 17px;
+    -ds-font-xl: 20px;
+    -ds-font-2xl: 24px;
+    -ds-font-3xl: 32px;
+
+    -ds-font-regular: normal;
+    -ds-font-medium: 500;
+    -ds-font-bold: bold;
+
+    -ds-leading-tight: 1.25;
+    -ds-leading-normal: 1.5;
+    -ds-leading-relaxed: 1.75;
+
+    /* ==================== SPACING ==================== */
+
+    -ds-space-0: 0px;
+    -ds-space-1: 4px;
+    -ds-space-2: 8px;
+    -ds-space-3: 12px;
+    -ds-space-4: 16px;
+    -ds-space-5: 20px;
+    -ds-space-6: 24px;
+    -ds-space-8: 32px;
+    -ds-space-10: 40px;
+    -ds-space-12: 48px;
+
+    /* ==================== BORDER RADIUS ==================== */
+
+    -ds-radius-sm: 8px;
+    -ds-radius-md: 12px;
+    -ds-radius-lg: 16px;
+    -ds-radius-xl: 20px;
+    -ds-radius-2xl: 25px;
+    -ds-radius-full: 9999px;
+
+    /* ==================== TRANSITIONS ==================== */
+
+    -ds-transition-fast: 150ms ease;
+    -ds-transition-normal: 250ms ease;
+
+    /* ==================== LAYOUT ==================== */
+
+    -ds-sidebar-width: 230px;
+    -ds-right-panel-width: 320px;
+    -ds-content-min-width: 450px;
+    -ds-header-height: 53px;
+}

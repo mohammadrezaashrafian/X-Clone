@@ -1,0 +1,356 @@
+/*
+ * Buttons
+ * Every button variant used across the application.
+ *
+ * Variants follow one shape: base class defines colour + radius + weight,
+ * and :hover / :pressed / :disabled are defined for each one so behaviour is
+ * predictable everywhere. All colours come from theme tokens.
+ */
+
+/* ==================== PRIMARY ==================== */
+
+.btn-primary {
+    -fx-background-color: -ds-brand;
+    -fx-text-fill: -ds-brand-contrast;
+    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.btn-primary:hover {
+    -fx-background-color: -ds-brand-hover;
+}
+
+.btn-primary:pressed {
+    -fx-background-color: -ds-brand-pressed;
+}
+
+.btn-primary:focused {
+    -fx-background-color: -ds-brand;
+    -fx-text-fill: -ds-brand-contrast;
+}
+
+.btn-primary:disabled {
+    -fx-background-color: -ds-border;
+    -fx-text-fill: -ds-text-secondary;
+    -fx-cursor: default;
+}
+
+.btn-primary-sm {
+    -fx-background-color: -ds-brand;
+    -fx-text-fill: -ds-brand-contrast;
+    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 8 16;
+    -fx-font-size: 14px;
+}
+
+.btn-primary-sm:hover {
+    -fx-background-color: -ds-brand-hover;
+}
+
+.btn-primary-sm:pressed {
+    -fx-background-color: -ds-brand-pressed;
+}
+
+.btn-primary-sm:focused {
+    -fx-background-color: -ds-brand;
+    -fx-text-fill: -ds-brand-contrast;
+}
+
+.btn-primary-sm:disabled {
+    -fx-background-color: -ds-border;
+    -fx-text-fill: -ds-text-secondary;
+    -fx-cursor: default;
+}
+
+/* Full width primary action (compose, submit rows). */
+.btn-primary-block {
+    -fx-background-color: -ds-brand;
+    -fx-text-fill: -ds-brand-contrast;
+    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+    -fx-cursor: hand;
+    -fx-padding: 10 24;
+    -fx-max-width: infinity;
+}
+
+.btn-primary-block:hover {
+    -fx-background-color: -ds-brand-hover;
+    -fx-effect: dropshadow(three-pass-box, rgba(29, 155, 240, 0.35), 14, 0, 0, 4);
+}
+
+.btn-primary-block:pressed {
+    -fx-background-color: -ds-brand-pressed;
+    -fx-effect: dropshadow(three-pass-box, rgba(29, 155, 240, 0.2), 6, 0, 0, 2);
+}
+
+.btn-primary-block:disabled {
+    -fx-background-color: -ds-border;
+    -fx-text-fill: -ds-text-muted;
+    -fx-cursor: default;
+    -fx-effect: none;
+}
+
+/* ==================== SECONDARY ==================== */
+
+.btn-secondary {
+    -fx-background-color: -ds-surface-muted;
+    -fx-text-fill: -ds-text-primary;
+    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.btn-secondary:hover {
+    -fx-background-color: -ds-surface-hover;
+}
+
+.btn-secondary:pressed {
+    -fx-background-color: -ds-surface-active;
+}
+
+.btn-secondary:disabled {
+    -fx-background-color: -ds-surface-muted;
+    -fx-text-fill: -ds-text-muted;
+    -fx-cursor: default;
+}
+
+/* ==================== OUTLINE ==================== */
+
+.btn-outline {
+    -fx-background-color: -ds-surface;
+    -fx-text-fill: -ds-text-primary;
+    -fx-border-color: -ds-border;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-padding: 6 16;
+    -fx-cursor: hand;
+}
+
+.btn-outline:hover {
+    -fx-background-color: -ds-surface-hover;
+    -fx-border-color: -ds-text-secondary;
+}
+
+.btn-outline:pressed {
+    -fx-background-color: -ds-surface-active;
+}
+
+.btn-outline:disabled {
+    -fx-text-fill: -ds-text-secondary;
+    -fx-border-color: -ds-border;
+    -fx-cursor: default;
+}
+
+.btn-outline-brand {
+    -fx-background-color: -ds-surface;
+    -fx-text-fill: -ds-brand;
+    -fx-border-color: -ds-brand;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-padding: 6 16;
+    -fx-cursor: hand;
+}
+
+.btn-outline-brand:hover {
+    -fx-background-color: -ds-brand-subtle;
+}
+
+.btn-outline-brand:pressed {
+    -fx-background-color: -ds-brand-subtle;
+    -fx-border-color: -ds-brand-hover;
+    -fx-text-fill: -ds-brand-hover;
+}
+
+.btn-outline-brand:disabled {
+    -fx-text-fill: -ds-text-secondary;
+    -fx-border-color: -ds-border;
+    -fx-cursor: default;
+}
+
+/* ==================== GHOST / ICON ==================== */
+
+.btn-ghost {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ds-text-primary;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.btn-ghost:hover {
+    -fx-background-color: -ds-surface-hover;
+}
+
+.btn-ghost:pressed {
+    -fx-background-color: -ds-surface-active;
+}
+
+.btn-ghost:disabled {
+    -fx-text-fill: -ds-text-muted;
+    -fx-cursor: default;
+}
+
+/* Square icon button (settings, overflow, dialog close). */
+.btn-icon {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ds-text-secondary;
+    -fx-cursor: hand;
+    -fx-padding: 6;
+    -fx-background-radius: 8;
+    -fx-min-width: 32;
+    -fx-min-height: 32;
+    -fx-alignment: CENTER;
+}
+
+.btn-icon:hover {
+    -fx-background-color: -ds-surface-hover;
+    -fx-text-fill: -ds-text-primary;
+}
+
+.btn-icon:pressed {
+    -fx-background-color: -ds-surface-active;
+}
+
+.btn-icon:disabled {
+    -fx-text-fill: -ds-text-muted;
+    -fx-opacity: 0.5;
+    -fx-cursor: default;
+}
+
+/* Unstyled icon-only action used inside cards (tweet actions). */
+.btn-ghost-icon {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ds-text-secondary;
+    -fx-cursor: hand;
+}
+
+.btn-ghost-icon:hover {
+    -fx-text-fill: -ds-brand;
+}
+
+.btn-ghost-icon:disabled {
+    -fx-opacity: 0.5;
+    -fx-cursor: default;
+}
+
+/* ==================== DANGER ==================== */
+
+.btn-danger {
+    -fx-background-color: -ds-danger;
+    -fx-text-fill: -ds-brand-contrast;
+    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.btn-danger:hover {
+    -fx-background-color: -ds-danger-hover;
+}
+
+.btn-danger:pressed {
+    -fx-background-color: -ds-danger-pressed;
+}
+
+.btn-danger:disabled {
+    -fx-background-color: -ds-border;
+    -fx-text-fill: -ds-text-secondary;
+    -fx-cursor: default;
+}
+
+/* ==================== CONTRAST (DARK PILL) ==================== */
+
+.btn-dark {
+    -fx-background-color: -ds-text-primary;
+    -fx-text-fill: -ds-surface;
+    -fx-background-radius: 25;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.btn-dark:hover {
+    -fx-background-color: -ds-inverse-hover;
+}
+
+.btn-dark:pressed {
+    -fx-background-color: -ds-inverse-pressed;
+}
+
+.btn-dark:disabled {
+    -fx-background-color: -ds-border;
+    -fx-text-fill: -ds-text-secondary;
+    -fx-cursor: default;
+}
+
+/* ==================== AUTH ==================== */
+
+/* Auth primary button (green accent for auth screens). */
+.btn-auth-primary {
+    -fx-background-color: -ds-success;
+    -fx-text-fill: -ds-brand-contrast;
+    -fx-background-radius: 25;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 12;
+    -fx-font-size: 15px;
+}
+
+.btn-auth-primary:hover {
+    -fx-background-color: -ds-success-hover;
+}
+
+.btn-auth-primary:pressed {
+    -fx-background-color: -ds-success-pressed;
+}
+
+.btn-auth-primary:disabled {
+    -fx-background-color: -ds-border;
+    -fx-text-fill: -ds-text-secondary;
+    -fx-cursor: default;
+}
+
+/* ==================== LINKS ==================== */
+
+.link-text {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ds-brand;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.link-text:hover {
+    -fx-text-fill: -ds-brand-hover;
+}
+
+.link-text:pressed {
+    -fx-text-fill: -ds-brand-pressed;
+}
+
+.link-text:focused {
+    -fx-background-color: -ds-brand-subtle;
+}
+
+.forgot-password-link {
+    -fx-text-fill: -ds-brand;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+}
+
+.forgot-password-link:hover {
+    -fx-text-fill: -ds-brand-hover;
+    -fx-underline: true;
+}
+
+.sign-up-link {
+    -fx-text-fill: -ds-text-secondary;
+    -fx-underline: false;
+}
+
+.sign-up-link:hover {
+    -fx-text-fill: -ds-brand;
+    -fx-underline: true;
+}

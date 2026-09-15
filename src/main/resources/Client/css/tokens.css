@@ -1,0 +1,136 @@
+/*
+ * Design Tokens
+ * Central source of truth for all visual values.
+ * Colors are defined in theme files (dark.css, light.css).
+ * This file contains typography, spacing, and layout tokens.
+ */
+
+.root {
+    /* ==================== TYPOGRAPHY ==================== */
+
+    /* Font sizes */
+    -ds-font-xs: 11px;
+    -ds-font-sm: 13px;
+    -ds-font-base: 15px;
+    -ds-font-lg: 17px;
+    -ds-font-xl: 20px;
+    -ds-font-2xl: 24px;
+    -ds-font-3xl: 32px;
+
+    /* Font weights */
+    -ds-font-regular: normal;
+    -ds-font-medium: 500;
+    -ds-font-bold: bold;
+
+    /* Line heights */
+    -ds-leading-tight: 1.25;
+    -ds-leading-normal: 1.5;
+    -ds-leading-relaxed: 1.75;
+
+    /* ==================== SPACING ==================== */
+
+    -ds-space-0: 0px;
+    -ds-space-1: 4px;
+    -ds-space-2: 8px;
+    -ds-space-3: 12px;
+    -ds-space-4: 16px;
+    -ds-space-5: 20px;
+    -ds-space-6: 24px;
+    -ds-space-8: 32px;
+    -ds-space-10: 40px;
+    -ds-space-12: 48px;
+
+    /* ==================== BORDER RADIUS ==================== */
+
+    -ds-radius-sm: 8px;
+    -ds-radius-md: 12px;
+    -ds-radius-lg: 16px;
+    -ds-radius-xl: 20px;
+    -ds-radius-2xl: 25px;
+    -ds-radius-full: 9999px;
+
+    /* ==================== TRANSITIONS ==================== */
+
+    -ds-transition-fast: 150ms ease;
+    -ds-transition-normal: 250ms ease;
+
+    /* ==================== LAYOUT ==================== */
+
+    -ds-sidebar-width: 230px;
+    -ds-right-panel-width: 320px;
+    -ds-content-min-width: 450px;
+    -ds-header-height: 53px;
+}
+
+/* ==================== TYPOGRAPHY CLASSES ==================== */
+
+.text-title-xl {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+}
+
+.text-title-lg {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+}
+
+.text-heading {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+}
+
+.text-subheading {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-secondary;
+}
+
+.text-body {
+    -fx-font-size: 15px;
+    -fx-text-fill: -ds-text-primary;
+}
+
+.text-body-bold {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+}
+
+.text-loading {
+    -fx-font-size: 14px;
+    -fx-text-fill: -ds-text-muted;
+}
+
+.text-meta {
+    -fx-font-size: 14px;
+    -fx-text-fill: -ds-text-secondary;
+}
+
+.text-caption {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-secondary;
+}
+
+.text-error {
+    -fx-text-fill: -ds-danger;
+}
+
+.text-ok {
+    -fx-text-fill: -ds-success;
+}
+
+.text-code {
+    -fx-text-fill: -ds-text-primary;
+    -fx-font-weight: bold;
+    -fx-letter-spacing: 5;
+}
+
+.brand-title {
+    -fx-text-fill: -ds-brand;
+    -fx-font-weight: bold;
+    -fx-font-size: 32px;
+}

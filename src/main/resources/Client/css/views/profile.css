@@ -1,0 +1,229 @@
+/*
+ * Profile Views
+ * Styles for own profile, user profile, and edit profile.
+ */
+
+/* ==================== PROFILE CARD ==================== */
+
+.profile-card {
+    -fx-background-color: -ds-surface;
+    -fx-background-radius: 15;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);
+}
+
+/* ==================== PROFILE BANNER ==================== */
+
+.profile-banner {
+    -fx-background-radius: 15 15 0 0;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 6, 0, 0, 2);
+}
+
+.profile-banner-placeholder {
+    -fx-background-color: -ds-border;
+    -fx-background-radius: 15 15 0 0;
+}
+
+.profile-banner-gradient {
+    -fx-background-color: linear-gradient(to right, -ds-brand, -ds-brand-deep);
+    -fx-background-radius: 15 15 0 0;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 8, 0, 0, 4);
+}
+
+/* Avatar overlapping the banner, matching the own-profile layout. */
+.profile-avatar-overlap {
+    -fx-translate-y: -32;
+}
+
+/* ==================== PROFILE AVATAR ==================== */
+
+.profile-avatar-wrapper {
+    -fx-border-color: -ds-surface;
+    -fx-border-width: 4;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 4, 0, 0, 2);
+}
+
+.profile-avatar {
+    -fx-background-radius: 50%;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 4, 0, 0, 2);
+}
+
+/* ==================== PROFILE INFO ==================== */
+
+.profile-display-name {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+    -fx-letter-spacing: -0.3;
+}
+
+.profile-username {
+    -fx-font-size: 14px;
+    -fx-text-fill: -ds-text-secondary;
+    -fx-letter-spacing: 0.2;
+}
+
+.profile-bio {
+    -fx-font-size: 15px;
+    -fx-text-fill: -ds-text-primary;
+    -fx-wrap-text: true;
+    -fx-line-spacing: 2;
+}
+
+.profile-stats {
+    -fx-padding: 5 0 0 0;
+}
+
+.profile-stat-count {
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+    -fx-cursor: hand;
+    -fx-font-size: 18px;
+}
+
+.profile-stat-count:hover {
+    -fx-text-fill: -ds-brand;
+    -fx-translate-x: -2;
+}
+
+.profile-stat-label {
+    -fx-text-fill: -ds-text-secondary;
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+}
+
+.profile-stat-label:hover {
+    -fx-text-fill: -ds-brand;
+}
+
+.profile-stat-item {
+    -fx-cursor: hand;
+    -fx-spacing: 4;
+    -fx-alignment: center-right;
+    -fx-transition-duration: 120ms;
+}
+
+.profile-stat-item:hover .profile-stat-count,
+.profile-stat-item:hover .profile-stat-label {
+    -fx-text-fill: -ds-brand;
+}
+
+.profile-info-section {
+    -fx-padding: 10 20 20 20;
+    -fx-spacing: 8;
+}
+
+.profile-actions-section {
+    -fx-padding: 0 20 10 20;
+}
+
+/* ==================== PROFILE TWEETS ==================== */
+
+.profile-tweets-header {
+    -fx-padding: 0 0 10 0;
+}
+
+.profile-tweets-container {
+    -fx-padding: 15 0 0 0;
+    -fx-spacing: 10;
+}
+
+/* ==================== EDIT PROFILE ==================== */
+
+.edit-profile-form {
+    -fx-background-color: -ds-surface;
+    -fx-background-radius: 15;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 1;
+    -fx-border-radius: 15;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.25), 12, 0, 0, 4);
+}
+
+.edit-profile-content {
+    -fx-padding: 0 20 20 20;
+    -fx-spacing: 15;
+}
+
+.edit-profile-clip {
+    -fx-padding: 6;
+    -fx-background-color: -ds-surface;
+    -fx-background-radius: 15;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 1;
+    -fx-border-radius: 15;
+}
+
+.edit-profile-avatar-row {
+    -fx-spacing: 15;
+}
+
+.edit-profile-avatar {
+    -fx-background-radius: 35;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 2;
+    -fx-border-radius: 35;
+}
+
+.edit-profile-stage-wrapper {
+    -fx-background-color: -ds-surface;
+    -fx-background-radius: 15;
+}
+
+.section-divider {
+    -fx-padding: 0 0 12 0;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 0 0 1 0;
+    -fx-background-color: -ds-border-light;
+    -fx-pref-height: 1;
+}
+
+/* ==================== USER PROFILE (OTHER USERS) ==================== */
+
+.user-profile-follow-btn {
+    -fx-background-color: -ds-text-primary;
+    -fx-text-fill: -ds-surface;
+    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 8 20 8 20;
+    -fx-cursor: hand;
+}
+
+.user-profile-follow-btn:hover {
+    -fx-background-color: -ds-inverse-hover;
+}
+
+.user-profile-follow-btn:pressed {
+    -fx-background-color: -ds-inverse-pressed;
+}
+
+.user-profile-following-btn {
+    -fx-background-color: transparent;
+    -fx-border-color: -ds-border;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-text-fill: -ds-text-primary;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 8 20 8 20;
+    -fx-cursor: hand;
+}
+
+.user-profile-following-btn:hover {
+    -fx-border-color: -ds-danger;
+    -fx-text-fill: -ds-danger;
+}
+
+/* ==================== USER LIST ==================== */
+
+.user-list-item {
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 12 15;
+    -fx-background-color: -ds-surface;
+    -fx-cursor: hand;
+}
+
+.user-list-item:hover {
+    -fx-background-color: -ds-surface-hover;
+}
+

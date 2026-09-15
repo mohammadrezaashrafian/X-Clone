@@ -1,0 +1,126 @@
+/*
+ * Miscellaneous Views
+ * Styles for comment dialog, retweet dialog, image upload dialog.
+ */
+
+/* ==================== COMMENT DIALOG ==================== */
+
+.comment-dialog {
+    -fx-background-color: -ds-surface;
+    -fx-background-radius: 16;
+    -fx-padding: 20;
+}
+
+.comment-target {
+    -fx-padding: 0 0 10 0;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 0 0 1 0;
+}
+
+.comment-target-author {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+}
+
+.comment-target-username {
+    -fx-font-size: 14px;
+    -fx-text-fill: -ds-text-secondary;
+}
+
+.comment-target-text {
+    -fx-font-size: 15px;
+    -fx-text-fill: -ds-text-primary;
+    -fx-wrap-text: true;
+}
+
+.comment-textarea {
+    -fx-background-color: transparent;
+    -fx-border-color: -ds-border;
+    -fx-border-radius: 10;
+    -fx-padding: 5;
+    -fx-font-size: 15px;
+}
+
+.comment-textarea:focused {
+    -fx-border-color: -ds-brand;
+}
+
+.comment-actions {
+    -fx-alignment: center-right;
+    -fx-spacing: 12;
+}
+
+/* ==================== RETWEET DIALOG ==================== */
+
+.retweet-dialog {
+    -fx-background-color: -ds-surface;
+    -fx-padding: 20;
+    -fx-background-radius: 12;
+}
+
+.retweet-quote-area {
+    -fx-spacing: 12;
+}
+
+.retweet-original {
+    -fx-border-color: -ds-border;
+    -fx-border-radius: 10;
+    -fx-padding: 10;
+    -fx-background-color: -ds-surface-muted;
+}
+
+.retweet-original-author {
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+}
+
+.retweet-original-text {
+    -fx-text-fill: -ds-text-secondary;
+    -fx-wrap-text: true;
+}
+
+.retweet-actions {
+    -fx-alignment: center-right;
+    -fx-spacing: 10;
+    -fx-padding: 10 0 0 0;
+}
+
+/* ==================== IMAGE UPLOAD DIALOG ==================== */
+
+.image-upload-dialog {
+    -fx-background-color: -ds-surface;
+    -fx-background-radius: 16;
+    -fx-padding: 20;
+}
+
+.image-upload-preview-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: -ds-border-light;
+    -fx-border-radius: 8;
+}
+
+.image-upload-preview-container {
+    -fx-padding: 10;
+    -fx-spacing: 10;
+}
+
+.image-upload-card {
+    -fx-alignment: center;
+    -fx-border-color: -ds-border;
+    -fx-border-radius: 8;
+    -fx-padding: 5;
+}
+
+.image-remove-btn {
+    -fx-background-color: transparent;
+    -fx-font-size: 10px;
+    -fx-cursor: hand;
+}
+
+.image-upload-actions {
+    -fx-alignment: center-right;
+    -fx-spacing: 12;
+    -fx-padding: 10 0 0 0;
+}
