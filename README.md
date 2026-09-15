@@ -14,7 +14,9 @@
   <img src="https://img.shields.io/badge/Java-25-ED8B00?logo=openjdk&logoColor=white" alt="Java 25"/>
   <img src="https://img.shields.io/badge/JavaFX-26.0.1-4E9BCD?logo=java&logoColor=white" alt="JavaFX 26.0.1"/>
   <img src="https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven&logoColor=white" alt="Maven"/>
+  <img src="https://img.shields.io/badge/Framework-Spring%20Boot-6DB33F?logo=springboot&logoColor=white" alt="Spring Boot"/>
   <img src="https://img.shields.io/badge/Database-PostgreSQL-336791?logo=postgresql&logoColor=white" alt="PostgreSQL"/>
+  <img src="https://img.shields.io/badge/Cache-Redis-DC382D?logo=redis&logoColor=white" alt="Redis"/>
   <img src="https://img.shields.io/badge/ORM-Hibernate%20%2F%20JPA-59666C?logo=hibernate&logoColor=white" alt="Hibernate/JPA"/>
   <img src="https://img.shields.io/badge/Protocol-JSON%20over%20TCP-yellow?logo=json&logoColor=white" alt="JSON over TCP"/>
   <img src="https://img.shields.io/badge/Tests-JUnit%205-25A162?logo=junit5&logoColor=white" alt="JUnit 5"/>
@@ -321,6 +323,11 @@ Delivery is asynchronous and strictly after the database commit: a
 rolled-back operation never sends an email, and provider failures never
 break the request or expose credentials/OTPs.
 
+#### Sample Email Notification
+<p align="center">
+  <img src="Attachments/SC6.jpg" alt="Password Reset Email" width="350"/>
+</p>
+
 ### 4. Optional: Redis cache
 
 The backend supports an opt-in Redis caching layer for three read paths:
@@ -360,11 +367,11 @@ Redis bootstrap for Testcontainers without touching test assertions.
 ## 9. Demo
 
 <img src="Attachments/ERD.png" alt="ERD"/>
-<img src="Attachments/SC1.jpg" alt="SC1"/>
-<img src="Attachments/SC2.jpg" alt="SC2"/>
-<img src="Attachments/SC3.jpg" alt="SC3"/>
+<img src="Attachments/SC1.png" alt="SC1"/>
+<img src="Attachments/SC2.png" alt="SC2"/>
+<img src="Attachments/SC3.png" alt="SC3"/>
 <img src="Attachments/SC4.png" alt="SC4"/>
-<img src="Attachments/SC5.jpg" alt="SC5"/>
+<img src="Attachments/SC5.png" alt="SC5"/>
 
 ## 10. Credits
 
