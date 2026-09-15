@@ -1,5 +1,6 @@
 package Client.controllers;
 
+import Client.AvatarLoader;
 import Client.ClientApplicationContext;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -21,7 +22,7 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 
-public class TimelineController {
+public class TimelineController implements MainLayoutController.LiveAvatarAware {
 
     private static final Logger log = Logger.getLogger(TimelineController.class.getName());
 
@@ -43,7 +44,13 @@ public class TimelineController {
     @FXML
     private Button addMediaButton;
 
+    @FXML
+    private Button addPollButton;
+
     private final ClientApplicationContext context;
+
+    /** Cached current-user avatar URL so tweet cards stay in sync. */
+    private String currentUserAvatarUrl;
 
 
     public TimelineController(ClientApplicationContext context) {
@@ -52,6 +59,14 @@ public class TimelineController {
 
     @FXML
     public void initialize() {
+        // Disable media and poll buttons since features are not yet implemented
+        if (addMediaButton != null) {
+            addMediaButton.setDisable(true);
+        }
+        if (addPollButton != null) {
+            addPollButton.setDisable(true);
+        }
+
         loadCurrentUserProfile();
         loadTimelineTweets();
     }
@@ -98,6 +113,55 @@ public class TimelineController {
     }
 
     private void loadCurrentUserProfile() {
+        if (!context.session().isLoggedIn()) {
+            return;
+        }
+
+        UUID currentUserId = context.getSnapshot().userId();
+        if (currentUserId == null) {
+            return;
+        }
+
+        context.getUserClientService()
+                .getProfile(currentUserId)
+                .thenAccept(result -> Platform.runLater(() -> {
+                    if (result == null || result.isFailure() || result.getData() == null) {
+                        return;
+                    }
+
+                    logic_core.app.dto.response.ProfileInfoResponse profile = result.getData();
+                    currentUserAvatarUrl = profile.avatarUrl();
+                    AvatarLoader.loadAvatar(currentUserAvatar, currentUserAvatarUrl);
+                }))
+                .exceptionally(error -> {
+                    log.warning("Failed to load current user profile: " + error.getMessage());
+                    return null;
+                });
+    }
+
+    /**
+     * Pushes a changed current-user avatar into the cards already on screen, so
+     * the user's own tweets update without the timeline being reloaded.
+     */
+    @Override
+    public void applyCurrentUserAvatar(String avatarUrl)
+    {
+        if (avatarUrl == null || avatarUrl.isBlank() || tweetsContainer == null)
+        {
+            return;
+        }
+
+        currentUserAvatarUrl = avatarUrl;
+
+        for (Node node : tweetsContainer.getChildren())
+        {
+            Object card = node.getProperties().get(TweetItemController.NODE_KEY);
+
+            if (card instanceof TweetItemController tweetItem)
+            {
+                tweetItem.applyCurrentUserAvatar(avatarUrl);
+            }
+        }
     }
 
 
@@ -184,7 +248,43 @@ public class TimelineController {
             Node node = loader.load();
 
             TweetItemController controller = loader.getController();
-            controller.setTweet(tweet);
+
+            // Let the shell reach this card later, for in-place avatar updates.
+            node.getProperties().put(TweetItemController.NODE_KEY, controller);
+
+            // For the current user's own tweets, use the live profile avatar
+            // so avatar changes are reflected without a full page reload.
+            String avatarUrl = tweet.avatarUrl();
+            UUID currentUserId = context.session().getCurrentUserId();
+            if (currentUserId != null && currentUserId.equals(tweet.authorId())
+                    && currentUserAvatarUrl != null) {
+                avatarUrl = currentUserAvatarUrl;
+            }
+
+            controller.preloadAvatar(avatarUrl);
+
+            TimelineTweet effectiveTweet = tweet;
+
+            if (currentUserAvatarUrl != null && currentUserId != null
+                    && currentUserId.equals(tweet.authorId())) {
+                effectiveTweet = TimelineTweet.builder()
+                        .tweetId(tweet.tweetId())
+                        .authorId(tweet.authorId())
+                        .username(tweet.username())
+                        .displayName(tweet.displayName())
+                        .avatarUrl(currentUserAvatarUrl)
+                        .content(tweet.content())
+                        .likeCount(tweet.likeCount())
+                        .replyCount(tweet.replyCount())
+                        .retweetCount(tweet.retweetCount())
+                        .isLiked(tweet.isLiked())
+                        .publishedAt(tweet.publishedAt())
+                        .media(tweet.media())
+                        .poll(tweet.poll())
+                        .build();
+            }
+
+            controller.setTweet(effectiveTweet);
 
             controller.setOnDeleteSuccess(() -> {
                 tweetsContainer.getChildren().remove(node);
@@ -204,21 +304,19 @@ public class TimelineController {
     {
         tweetsContainer.getChildren().clear();
         Label label = new Label(message);
-
-        label.setStyle("-fx-text-fill:#666666;" + "-fx-padding:16;");
-
+        label.getStyleClass().add("empty-state");
         tweetsContainer.getChildren().add(label);
     }
 
     @FXML
     void handleSelectMedia()
     {
-
+        // Media upload not yet implemented - button is disabled in FXML
     }
 
     @FXML
     void handleCreatePoll()
     {
-
+        // Poll creation not yet implemented - button is disabled in FXML
     }
 }

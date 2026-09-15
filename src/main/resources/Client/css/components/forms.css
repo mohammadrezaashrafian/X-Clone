@@ -1,0 +1,161 @@
+/*
+ * Forms
+ * Text inputs, labels, and form layout helpers.
+ *
+ * Every input exposes the same state set: default, :focused, :disabled and a
+ * `.field-input-error` validation state, so validation looks identical on
+ * every screen.
+ */
+
+/* ==================== LABELS ==================== */
+
+.field-label {
+    -fx-text-fill: -ds-text-secondary;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.field-help {
+    -fx-text-fill: -ds-text-muted;
+    -fx-font-size: 12px;
+}
+
+.field-error-text {
+    -fx-text-fill: -ds-danger;
+    -fx-font-size: 12px;
+}
+
+/* ==================== TEXT INPUTS ==================== */
+
+.field-input {
+    -fx-background-color: -ds-input-bg;
+    -fx-border-color: -ds-border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+    -fx-text-fill: -ds-text-primary;
+    -fx-prompt-text-fill: -ds-text-muted;
+    -fx-focus-color: -ds-brand;
+    -fx-focus-traversable: true;
+}
+
+.field-input:focused {
+    -fx-border-color: -ds-brand;
+    -fx-border-width: 2;
+}
+
+.field-input:disabled {
+    -fx-opacity: 0.6;
+    -fx-cursor: default;
+}
+
+/*
+ * TextField / TextArea internals frequently keep their own JavaFX default fills and
+ * borders. Force the token surface to win so the inputs stay consistent in both
+ * themes and the dialog never shows white corners, red borders, or unstyled inner text.
+ */
+.field-input > .text,
+.field-input .content > .text,
+.field-input .viewport > .text,
+.field-input Text,
+.field-input .scroll-pane > .viewport > .text,
+.field-input ScrollPane > .viewport > .text {
+    -fx-fill: -ds-text-primary;
+}
+
+.field-input .content,
+.field-input .viewport,
+.field-input ScrollPane,
+.field-input ScrollPane::-fx-scroll-bar,
+.field-input ScrollPane::-fx-scroll-bar-thumb,
+.field-input ScrollPane::-fx-scroll-bar-track,
+.field-input ScrollPane > .viewport {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.field-input .content {
+    -fx-background-color: -ds-input-bg;
+    -fx-border-color: -ds-border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.field-input-error {
+    -fx-border-color: -ds-danger;
+    -fx-text-fill: -ds-text-primary;
+    -fx-focus-color: -ds-danger;
+}
+
+.field-input-error:focused {
+    -fx-border-color: -ds-danger;
+    -fx-border-width: 2;
+}
+
+.field-prompt {
+    -fx-background-color: -ds-surface;
+    -fx-border-color: -ds-border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+    -fx-text-fill: -ds-text-secondary;
+    -fx-prompt-text-fill: -ds-text-muted;
+}
+
+.field-prompt:focused {
+    -fx-border-color: -ds-brand;
+}
+
+/* ==================== PILL INPUT (AUTH) ==================== */
+
+.pill-input-container {
+    -fx-border-color: -ds-border-light;
+    -fx-border-radius: 25;
+    -fx-background-radius: 25;
+    -fx-background-color: -ds-input-bg;
+    -fx-padding: 0 15 0 15;
+}
+
+.pill-input-container:hover {
+    -fx-border-color: -ds-border;
+}
+
+.pill-input-container:focused {
+    -fx-border-color: -ds-brand;
+}
+
+.pill-input {
+    -fx-background-color: transparent;
+    -fx-padding: 5 10 5 10;
+    -fx-text-fill: -ds-text-primary;
+    -fx-prompt-text-fill: -ds-text-muted;
+}
+
+.pill-input:focused {
+    -fx-background-color: transparent;
+}
+
+.pill-input:disabled {
+    -fx-opacity: 0.6;
+}
+
+.pill-input-icon {
+    -fx-opacity: 0.6;
+}
+
+/* ==================== FORM LAYOUT ==================== */
+
+.form-group {
+    -fx-spacing: 5;
+}
+
+.form-row {
+    -fx-padding: 10 0 0 0;
+}
+
+.form-action-row {
+    -fx-alignment: center-right;
+    -fx-spacing: 10;
+    -fx-padding: 10 0 0 0;
+}
+

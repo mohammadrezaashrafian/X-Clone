@@ -4,6 +4,7 @@ import Client.ClientApplicationContext;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -48,11 +49,15 @@ public class MessagesController {
 
     @FXML
     private Button sendMessageButton;
-    private List<UUID> pendingRecipientIds;
+
+    /** Guards against duplicate submits while a send request is in flight. */
+    private boolean sendInFlight;
 
     private final ClientApplicationContext context;
 
     private UUID selectedChatId;
+
+    private final Object sendLock = new Object();
 
     private final AtomicLong conversationsRequestVersion =
             new AtomicLong(0);
@@ -66,13 +71,16 @@ public class MessagesController {
 
     public MessagesController(
             ClientApplicationContext context) {
-        this.context = context;;
+        this.context = context;
     }
 
     @FXML
     public void initialize() {
 
-        sendMessageButton.setDisable(true);
+        updateSendState();
+
+        messageInputField.textProperty().addListener(
+                (observable, oldValue, newValue) -> updateSendState());
 
         messageInputField.setOnKeyPressed(event -> {
 
@@ -92,17 +100,30 @@ public class MessagesController {
             return;
         }
 
-        if (pendingRecipientIds != null) {
+        UUID pendingRecipient = consumePendingRecipient();
 
-            context.getConversationClientService()
-                    .createConversation(context.getSnapshot().userId(),pendingRecipientIds)
-                    .thenAccept(result ->
-                            Platform.runLater(this::loadUserConversations));
+        if (pendingRecipient != null) {
 
-        } else {
+            // Opened from a profile's "Message" action: refresh the conversation
+            // list without auto-selecting, then open the requested conversation.
+            loadUserConversationsWithoutAutoSelection();
 
-            loadUserConversations();
+            openConversationWith(List.of(pendingRecipient));
+
+            return;
         }
+
+        loadUserConversations();
+    }
+
+    /**
+     * Reads (and clears) the recipient the shell stored for this mount, if any.
+     */
+    private UUID consumePendingRecipient() {
+
+        MainLayoutController shell = context.getMainLayoutController();
+
+        return shell == null ? null : shell.consumePendingMessageRecipient();
     }
 
     public void openConversationWith(List<UUID> recipientIds) {
@@ -111,23 +132,25 @@ public class MessagesController {
             return;
         }
 
+        UUID currentUserId = context.session().getCurrentUserId();
+
         context.getConversationClientService()
                 .createConversation(
-                        context.session().getCurrentUserId(),
+                        currentUserId,
                         recipientIds
                 )
-                .thenAccept(result -> Platform.runLater(() -> {
+                .thenAccept(result -> {
 
-                    if (result == null || result.isFailure()) {
-                        log.warning("Failed to open conversation.");
+                    if (result != null && result.isSuccess() && result.getData() != null) {
+                        UUID conversationId = result.getData().conversationId();
+
+                        Platform.runLater(() -> selectConversationByConversationId(conversationId));
+
                         return;
                     }
 
-                    pendingRecipientIds = null;
-
-                    loadUserConversations();
-
-                }))
+                    log.warning("Failed to open conversation.");
+                })
                 .exceptionally(error -> {
 
                     log.log(Level.SEVERE,
@@ -186,7 +209,7 @@ public class MessagesController {
 
                                 messagesContainer.getChildren().clear();
 
-                                sendMessageButton.setDisable(true);
+                                updateSendState();
 
                                 return;
                             }
@@ -210,6 +233,22 @@ public class MessagesController {
 
                     return null;
                 });
+    }
+
+    private void selectConversationByConversationId(UUID conversationId) {
+
+        if (conversationId == null) {
+            return;
+        }
+
+        ConversationSummaryResponse summary = ConversationSummaryResponse.builder()
+                .conversationId(conversationId)
+                .title("Conversation")
+                .lastMessage("")
+                .unreadCount(0)
+                .build();
+
+        selectConversation(summary);
     }
 
     private void renderConversations(
@@ -241,10 +280,7 @@ public class MessagesController {
                         )
                 );
 
-        titleLabel.setStyle(
-                "-fx-font-size: 14px;" +
-                        "-fx-font-weight: bold;"
-        );
+        titleLabel.getStyleClass().add("conversation-title");
 
         Label previewLabel =
                 new Label(
@@ -256,10 +292,7 @@ public class MessagesController {
 
         previewLabel.setWrapText(true);
         previewLabel.setMaxWidth(190);
-        previewLabel.setStyle(
-                "-fx-text-fill:#536471;" +
-                        "-fx-font-size:12px;"
-        );
+        previewLabel.getStyleClass().add("conversation-preview");
 
         VBox textContainer =
                 new VBox(
@@ -283,13 +316,7 @@ public class MessagesController {
                     )
             );
 
-            unreadLabel.setStyle(
-                    "-fx-background-color:#1d9bf0;" +
-                            "-fx-text-fill:white;" +
-                            "-fx-font-weight:bold;" +
-                            "-fx-padding:4 7 4 7;" +
-                            "-fx-background-radius:20;"
-            );
+            unreadLabel.getStyleClass().add("conversation-unread-badge");
         }
 
         HBox card =
@@ -301,20 +328,11 @@ public class MessagesController {
 
         card.setMaxWidth(Double.MAX_VALUE);
 
-        card.setStyle(
-                "-fx-padding:10;" +
-                        "-fx-background-radius:10;" +
-                        "-fx-cursor:hand;"
-        );
+        card.getStyleClass().add("conversation-card");
 
         if (conversation.conversationId().equals(selectedChatId)) {
 
-            card.setStyle(
-                    "-fx-padding:10;" +
-                            "-fx-background-color:#eff3f4;" +
-                            "-fx-background-radius:10;" +
-                            "-fx-cursor:hand;"
-            );
+            card.getStyleClass().add("conversation-card-active");
         }
 
         VBox wrapper = new VBox(card);
@@ -342,7 +360,7 @@ public class MessagesController {
                 )
         );
 
-        sendMessageButton.setDisable(false);
+        updateSendState();
 
         loadUserConversationsWithoutAutoSelection();
 
@@ -504,10 +522,7 @@ public class MessagesController {
 
         Label timeLabel = new Label(time);
 
-        timeLabel.setStyle(
-                "-fx-font-size:10px;" +
-                        "-fx-text-fill:#536471;"
-        );
+        timeLabel.getStyleClass().add("message-timestamp");
 
         VBox bubbleContent =
                 new VBox(
@@ -523,10 +538,7 @@ public class MessagesController {
             Label edited =
                     new Label("edited");
 
-            edited.setStyle(
-                    "-fx-font-size:10px;" +
-                            "-fx-text-fill:#536471;"
-            );
+            edited.getStyleClass().add("message-edited");
 
             bubbleContent.getChildren().add(edited);
         }
@@ -539,24 +551,12 @@ public class MessagesController {
         if (mine) {
 
             bubble.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
-
-            contentLabel.setStyle(
-                    "-fx-background-color:#1d9bf0;" +
-                            "-fx-text-fill:white;" +
-                            "-fx-padding:9 13 9 13;" +
-                            "-fx-background-radius:16;"
-            );
+            contentLabel.getStyleClass().add("message-bubble-sent");
 
         } else {
 
             bubble.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-
-            contentLabel.setStyle(
-                    "-fx-background-color:#eff3f4;" +
-                            "-fx-text-fill:#0f1419;" +
-                            "-fx-padding:9 13 9 13;" +
-                            "-fx-background-radius:16;"
-            );
+            contentLabel.getStyleClass().add("message-bubble-received");
         }
 
         return bubble;
@@ -571,24 +571,26 @@ public class MessagesController {
     void handleSendMessage(
             ActionEvent event) {
 
-        if (selectedChatId == null) {
+        UUID conversationId;
 
-            log.warning("No conversation selected.");
+        synchronized (sendLock) {
+            if (selectedChatId == null) {
 
-            return;
+                log.warning("No conversation selected.");
+
+                return;
+            }
+
+            conversationId = selectedChatId;
         }
 
-
         String content = messageInputField.getText();
-
 
         if (content == null || content.isBlank()) {
             return;
         }
 
-
         String trimmedContent = content.trim();
-
 
         if (trimmedContent.length() > 1000) {
 
@@ -597,13 +599,9 @@ public class MessagesController {
             return;
         }
 
-
-        UUID conversationId = selectedChatId;
         long requestVersion = sendRequestVersion.incrementAndGet();
-        sendMessageButton.setDisable(true);
 
-
-        messageInputField.setDisable(true);
+        setSendInFlight(true);
 
 
         context.getMessageClientService()
@@ -630,9 +628,7 @@ public class MessagesController {
                                 log.warning("Message send failed: " + error);
 
 
-                                sendMessageButton.setDisable(false);
-
-                                messageInputField.setDisable(false);
+                                setSendInFlight(false);
 
                                 return;
                             }
@@ -649,10 +645,7 @@ public class MessagesController {
                             loadUserConversationsWithoutAutoSelection();
 
 
-                            sendMessageButton.setDisable(false);
-
-                            messageInputField.setDisable(false);
-
+                            setSendInFlight(false);
 
                             messageInputField.requestFocus();
                         })
@@ -666,10 +659,7 @@ public class MessagesController {
                             error
                     );
 
-                    Platform.runLater(() -> {
-                        sendMessageButton.setDisable(false);
-                        messageInputField.setDisable(false);
-                    });
+                    Platform.runLater(() -> setSendInFlight(false));
 
                     return null;
                 });
@@ -679,6 +669,33 @@ public class MessagesController {
     // =========================================================
     // UI HELPERS
     // =========================================================
+
+    /**
+     * Send is only available when a conversation is selected, the composer holds
+     * non-blank text, and no send request is currently in flight.
+     *
+     * The text field itself is never disabled: typing must stay possible both
+     * before a conversation is picked and while a send is running.
+     */
+    private void updateSendState() {
+
+        if (sendMessageButton == null) {
+            return;
+        }
+
+        String text = messageInputField == null ? null : messageInputField.getText();
+
+        boolean hasText = text != null && !text.isBlank();
+
+        sendMessageButton.setDisable(sendInFlight || selectedChatId == null || !hasText);
+    }
+
+    private void setSendInFlight(boolean value) {
+
+        sendInFlight = value;
+
+        updateSendState();
+    }
 
     private void showChatsPlaceholder(String message) {
 
@@ -691,10 +708,7 @@ public class MessagesController {
         label.setWrapText(true);
 
 
-        label.setStyle(
-                "-fx-padding: 10; " +
-                        "-fx-text-fill: #536471;"
-        );
+        label.getStyleClass().add("empty-state");
 
 
         chatsContainer.getChildren().add(label);
@@ -708,7 +722,7 @@ public class MessagesController {
 
         Label label = new Label(message);
         label.setWrapText(true);
-        label.setStyle("-fx-text-fill: #536471;");
+        label.getStyleClass().add("empty-state");
 
         messagesContainer.getChildren().add(label);
     }

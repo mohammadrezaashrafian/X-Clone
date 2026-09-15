@@ -61,7 +61,7 @@ public class UserListController {
         usersContainer.getChildren().clear();
 
         Label emptyLabel = new Label("No users found.");
-        emptyLabel.setStyle("-fx-text-fill: #536471; -fx-font-size: 14px;");
+        emptyLabel.getStyleClass().add("empty-state");
         usersContainer.getChildren().add(emptyLabel);
     }
 

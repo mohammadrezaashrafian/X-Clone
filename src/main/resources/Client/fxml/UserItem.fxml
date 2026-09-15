@@ -7,9 +7,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
-<?import javafx.scene.text.Font?>
 
-<HBox fx:id="rootContainer" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" spacing="12.0" style="-fx-border-color: #eff3f4; -fx-border-width: 0 0 1 0; -fx-padding: 12 15; -fx-background-color: white;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.UserItemController">
+<HBox fx:id="rootContainer" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" spacing="12.0" styleClass="user-list-item" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.UserItemController">
     <children>
         <ImageView fx:id="avatarImageView" fitHeight="44.0" fitWidth="44.0" pickOnBounds="true" preserveRatio="true">
             <clip>
@@ -19,25 +18,16 @@
 
         <VBox alignment="CENTER_LEFT" spacing="2.0" HBox.hgrow="ALWAYS">
             <children>
-                <Label fx:id="displayNameLabel" text="Display Name" textFill="#0f1419">
-                    <font>
-                        <Font name="System Bold" size="15.0" />
-                    </font>
-                </Label>
-                <Label fx:id="usernameLabel" text="@username" textFill="#536471">
-                    <font>
-                        <Font size="14.0" />
-                    </font>
-                </Label>
+                <Label fx:id="displayNameLabel" text="Display Name" styleClass="text-body-bold" />
+                <Label fx:id="usernameLabel" text="&#64;username" styleClass="text-meta" />
             </children>
         </VBox>
 
-        <HBox alignment="CENTER_RIGHT" spacing="8.0">
+        <VBox alignment="CENTER_RIGHT" spacing="8.0">
             <children>
-                <Button fx:id="messageButton" style="-fx-background-color: white; -fx-text-fill: #0f1419; -fx-border-color: #cfd9de; -fx-border-radius: 20; -fx-background-radius: 20; -fx-font-weight: bold; -fx-padding: 6 16; -fx-cursor: hand;" text="Message" />
-
-                <Button fx:id="followButton" style="-fx-background-color: #0f1419; -fx-text-fill: white; -fx-background-radius: 20; -fx-font-weight: bold; -fx-padding: 6 16; -fx-cursor: hand;" text="Follow" />
+                <Button fx:id="messageButton" styleClass="btn-outline" text="Message" />
+                <Button fx:id="followButton" styleClass="btn-primary" text="Follow" />
             </children>
-        </HBox>
+        </VBox>
     </children>
 </HBox>

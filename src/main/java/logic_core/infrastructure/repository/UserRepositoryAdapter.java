@@ -109,6 +109,12 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
+    public Optional<UserModel> findByEmailForUpdate(String email) {
+        return userJpaRepository.findWithLockByEmailAndIsDeletedFalse(email)
+                .map(UserEntityMapper::toModel);
+    }
+
+    @Override
     public Optional<UserModel> findUserBySessionId(UUID sessionId) {
         return userJpaRepository.findUserBySessionId(sessionId)
                 .map(UserEntityMapper::toModel);

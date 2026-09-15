@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<!--
+  Animated utility-panel widget. Crossfades between the people you follow and
+  your recent conversations; both scenes are filled from real services.
+-->
+<VBox fx:id="widgetRoot"
+      maxWidth="1.7976931348623157E308"
+      styleClass="widget-card"
+      xmlns="http://javafx.com/javafx/26"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Client.controllers.DynamicWidgetController">
+    <children>
+
+        <HBox alignment="CENTER_LEFT" spacing="8.0" styleClass="widget-header">
+            <children>
+
+                <Label fx:id="widgetTitle"
+                       styleClass="widget-title"
+                       text="People you follow"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <HBox fx:id="widgetDots" alignment="CENTER" styleClass="widget-dots">
+                    <children/>
+                </HBox>
+
+            </children>
+        </HBox>
+
+        <VBox fx:id="widgetBody" styleClass="widget-scene-body"/>
+
+    </children>
+</VBox>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.HBox?>
+
+<!--
+  Reusable segmented theme toggle (dark / light).
+  Talks only to the ThemeManager through ThemeSwitcherController.
+-->
+<HBox fx:id="themeSwitcher"
+      alignment="CENTER"
+      styleClass="theme-switcher"
+      xmlns="http://javafx.com/javafx/26"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Client.controllers.ThemeSwitcherController">
+    <children>
+
+        <Button fx:id="darkSegment"
+                mnemonicParsing="false"
+                styleClass="theme-segment"
+                text="☾ Dark"/>
+
+        <Button fx:id="lightSegment"
+                mnemonicParsing="false"
+                styleClass="theme-segment"
+                text="☀ Light"/>
+
+    </children>
+</HBox>

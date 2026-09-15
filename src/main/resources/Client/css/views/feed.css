@@ -1,0 +1,183 @@
+/*
+ * Feed Views
+ * Styles for timeline, tweet composer, tweet cards, and interactions.
+ */
+
+/* ==================== TWEET COMPOSER ==================== */
+
+.tweet-composer {
+    -fx-background-color: -ds-surface;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 18 20 16 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 3);
+    -fx-background-radius: 0;
+}
+
+.tweet-composer-input {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ds-text-primary;
+    -fx-font-size: 17px;
+    -fx-padding: 6 0 6 0;
+    -fx-font-weight: 500;
+}
+
+.tweet-composer-input:focused {
+    -fx-background-color: transparent;
+}
+
+.tweet-composer-actions {
+    -fx-alignment: center-left;
+    -fx-spacing: 10;
+}
+
+.tweet-composer-avatar {
+    -fx-background-radius: 22.5;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 1;
+}
+
+.tweet-composer-media {
+    -fx-background-radius: 10;
+}
+
+/* ==================== TWEET CARD ==================== */
+
+.tweet-item {
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 14 16 12 16;
+    -fx-background-color: -ds-surface;
+    -fx-background-radius: 0;
+    -fx-cursor: hand;
+}
+
+.tweet-item:hover {
+    -fx-background-color: -ds-surface-hover;
+    -fx-border-color: -ds-border;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.06), 6, 0, 0, 2);
+}
+
+.tweet-header {
+    -fx-spacing: 5;
+    -fx-alignment: center-left;
+}
+
+.tweet-display-name {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+    -fx-cursor: hand;
+}
+
+.tweet-username {
+    -fx-font-size: 14px;
+    -fx-text-fill: -ds-text-secondary;
+    -fx-cursor: hand;
+}
+
+.tweet-separator {
+    -fx-font-size: 14px;
+    -fx-text-fill: -ds-text-secondary;
+}
+
+.tweet-timestamp {
+    -fx-font-size: 13px;
+    -fx-text-fill: -ds-text-muted;
+}
+
+.tweet-content {
+    -fx-font-size: 15px;
+    -fx-text-fill: -ds-text-primary;
+    -fx-wrap-text: true;
+    -fx-font-weight: 400;
+    -fx-line-spacing: 2;
+}
+
+.tweet-media {
+    -fx-background-radius: 12;
+}
+
+/* ==================== TWEET ACTIONS ==================== */
+
+.tweet-actions {
+    -fx-padding: 6 0 0 0;
+    -fx-spacing: 24;
+}
+
+.tweet-action-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ds-text-secondary;
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+    -fx-min-width: 40;
+    -fx-alignment: center;
+}
+
+.tweet-action-btn:hover {
+    -fx-text-fill: -ds-brand;
+    -fx-translate-y: -1;
+}
+
+.tweet-action-btn-liked {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ds-danger;
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+    -fx-min-width: 40;
+    -fx-alignment: center;
+}
+
+.tweet-action-btn-liked:hover {
+    -fx-text-fill: -ds-danger-hover;
+    -fx-translate-y: -1;
+}
+
+/* Bookmarked / saved state */
+.tweet-action-btn-active {
+    -fx-text-fill: -ds-brand;
+    -fx-font-weight: bold;
+}
+
+.tweet-delete-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ds-danger;
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+    -fx-min-width: 40;
+    -fx-alignment: center;
+}
+
+.tweet-delete-btn:hover {
+    -fx-background-color: -ds-danger-subtle;
+    -fx-translate-y: -1;
+}
+
+/* ==================== TWEET THREAD ==================== */
+
+.tweet-replies-container {
+    -fx-padding: 10 0 0 40.0;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 1 0 0 0;
+}
+
+/* ==================== POLL ==================== */
+
+.poll-container {
+    -fx-padding: 5 0 5 0;
+}
+
+/* ==================== RETWEET BANNER ==================== */
+
+.retweet-banner {
+    -fx-padding: 8 15;
+    -fx-font-size: 13px;
+    -fx-text-fill: -ds-text-secondary;
+}
+
+/* ==================== TIMELINE ==================== */
+
+.timeline-container {
+    -fx-padding: 15;
+    -fx-spacing: 12;
+}

@@ -1,0 +1,298 @@
+/*
+ * Auth Views
+ * Styles specific to authentication screens.
+ */
+
+/*
+ * Auth Views
+ * Styles specific to authentication screens.
+ */
+
+/* ==================== AUTH PAGE ==================== */
+
+.auth-page {
+    -fx-background-color: -ds-surface;
+    -fx-alignment: CENTER;
+    -fx-padding: 40;
+}
+
+/* Theme toggle (top corner of auth screens) */
+.theme-toggle-btn {
+    -fx-background-color: -ds-surface-muted;
+    -fx-text-fill: -ds-text-secondary;
+    -fx-font-size: 16px;
+    -fx-cursor: hand;
+    -fx-padding: 8 10;
+    -fx-background-radius: 8;
+    -fx-max-width: 40;
+    -fx-alignment: CENTER;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+}
+
+.theme-toggle-btn:hover {
+    -fx-background-color: -ds-surface-hover;
+    -fx-text-fill: -ds-text-primary;
+    -fx-border-color: -ds-border;
+}
+
+.theme-toggle-btn:pressed {
+    -fx-background-color: -ds-surface-active;
+    -fx-border-color: -ds-border;
+}
+
+/* ==================== AUTH CARD ==================== */
+
+.auth-card {
+    -fx-background-color: -ds-surface;
+    -fx-background-radius: 24;
+    -fx-padding: 40 40;
+    -fx-spacing: 24;
+    -fx-alignment: CENTER;
+    -fx-max-width: 420;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 40, 0, 0, 8);
+}
+
+.auth-card:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 48, 0, 0, 12);
+}
+
+/* ==================== AUTH BRANDING ==================== */
+
+.auth-brand {
+    -fx-alignment: CENTER;
+    -fx-spacing: 12;
+}
+
+/* Transparent logo plate: the brand mark sits directly on the card. */
+.auth-logo {
+    -fx-background-color: transparent;
+}
+
+.auth-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+}
+
+.auth-subtitle {
+    -fx-font-size: 15px;
+    -fx-text-fill: -ds-text-secondary;
+    -fx-text-alignment: center;
+}
+
+/* ==================== AUTH INPUTS ==================== */
+
+.auth-input-wrapper {
+    -fx-spacing: 16;
+}
+
+.auth-input-container {
+    -fx-border-color: -ds-border-light;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-background-color: -ds-input-bg;
+    -fx-padding: 0 16;
+    -fx-border-width: 1.5;
+    -fx-pref-height: 52;
+}
+
+.auth-input-container:hover {
+    -fx-border-color: -ds-border;
+}
+
+.auth-input-container:focused {
+    -fx-border-color: -ds-brand;
+    -fx-border-width: 2;
+    -fx-background-color: -ds-surface;
+}
+
+.auth-input-icon {
+    -fx-opacity: 0.5;
+    -fx-padding: 0 8 0 0;
+    -fx-fit-height: 18;
+    -fx-fit-width: 18;
+}
+
+.auth-input-field {
+    -fx-background-color: transparent;
+    -fx-padding: 12 0;
+    -fx-font-size: 15px;
+    -fx-text-fill: -ds-text-primary;
+    -fx-prompt-text-fill: -ds-text-muted;
+    -fx-pref-height: 48;
+}
+
+.auth-input-field:focused {
+    -fx-background-color: transparent;
+}
+
+.auth-input-field:disabled {
+    -fx-opacity: 0.5;
+}
+
+/* ==================== AUTH BUTTON ==================== */
+
+.auth-submit-btn {
+    -fx-background-color: -ds-brand;
+    -fx-text-fill: -ds-brand-contrast;
+    -fx-background-radius: 12;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+    -fx-cursor: hand;
+    -fx-padding: 14 24;
+    -fx-max-width: infinity;
+    -fx-min-height: 48;
+    -fx-effect: dropshadow(three-pass-box, rgba(29, 155, 240, 0.3), 12, 0, 0, 4);
+}
+
+.auth-submit-btn:hover {
+    -fx-background-color: -ds-brand-hover;
+    -fx-effect: dropshadow(three-pass-box, rgba(29, 155, 240, 0.4), 16, 0, 0, 6);
+}
+
+.auth-submit-btn:pressed {
+    -fx-background-color: -ds-brand-pressed;
+    -fx-effect: dropshadow(three-pass-box, rgba(29, 155, 240, 0.2), 8, 0, 0, 2);
+}
+
+.auth-submit-btn:disabled {
+    -fx-background-color: -ds-border;
+    -fx-text-fill: -ds-text-muted;
+    -fx-cursor: default;
+    -fx-effect: none;
+}
+
+/* Loading state */
+.auth-submit-btn-loading {
+    -fx-background-color: -ds-brand;
+    -fx-opacity: 0.8;
+    -fx-cursor: wait;
+}
+
+/* ==================== AUTH LINKS ==================== */
+
+.auth-links {
+    -fx-alignment: CENTER;
+    -fx-spacing: 24;
+}
+
+.auth-link {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ds-brand;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+
+.auth-link:hover {
+    -fx-text-fill: -ds-brand-hover;
+    -fx-underline: true;
+}
+
+.auth-link:pressed {
+    -fx-text-fill: -ds-brand-pressed;
+}
+
+.auth-divider-text {
+    -fx-text-fill: -ds-text-muted;
+    -fx-font-size: 13px;
+}
+
+/* ==================== AUTH ERROR ==================== */
+
+.auth-error-banner {
+    -fx-background-color: -ds-danger-subtle;
+    -fx-border-color: -ds-danger;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 12 16;
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 8;
+}
+
+.auth-error-text {
+    -fx-text-fill: -ds-danger;
+    -fx-font-size: 14px;
+    -fx-wrap-text: true;
+    -fx-font-weight: bold;
+}
+
+/* ==================== AUTH FOOTER ==================== */
+
+.auth-footer {
+    -fx-alignment: CENTER;
+    -fx-spacing: 8;
+}
+
+.auth-footer-version {
+    -fx-text-fill: -ds-text-muted;
+    -fx-font-size: 12px;
+}
+
+.auth-footer-links {
+    -fx-alignment: CENTER;
+    -fx-spacing: 16;
+}
+
+.auth-footer-link {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ds-text-secondary;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+
+.auth-footer-link:hover {
+    -fx-text-fill: -ds-brand;
+    -fx-underline: true;
+}
+
+/* ==================== ANIMATIONS ==================== */
+
+/* Page entrance animation - applied via controller */
+.auth-page-enter {
+    -fx-opacity: 0;
+}
+
+.auth-page-entered {
+    -fx-opacity: 1;
+}
+
+/* Card entrance animation */
+.auth-card-enter {
+    -fx-translate-y: 30;
+    -fx-opacity: 0;
+}
+
+.auth-card-entered {
+    -fx-translate-y: 0;
+    -fx-opacity: 1;
+}
+
+/* ==================== LOADING SPINNER ==================== */
+
+.auth-spinner {
+    -fx-padding: 4;
+}
+
+.auth-spinner-dot {
+    -fx-background-color: -ds-brand-contrast;
+    -fx-background-radius: 50%;
+    -fx-min-width: 6;
+    -fx-min-height: 6;
+    -fx-max-width: 6;
+    -fx-max-height: 6;
+}
+
+/* ==================== VERIFICATION CODE ==================== */
+
+.verification-code-field {
+    -fx-background-color: transparent;
+    -fx-padding: 5 10 5 10;
+    -fx-font-weight: bold;
+    -fx-letter-spacing: 5;
+}
+
+

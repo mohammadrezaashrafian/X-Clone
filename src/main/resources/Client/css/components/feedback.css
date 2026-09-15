@@ -1,0 +1,146 @@
+/*
+ * Feedback
+ * Application states (empty, error, loading, validation), badges and toasts.
+ *
+ * Every screen should express these states with these classes so a failure
+ * looks the same everywhere. Controllers only add the class.
+ */
+
+/* ==================== EMPTY STATE ==================== */
+
+.empty-state {
+    -fx-text-fill: -ds-text-muted;
+    -fx-font-size: 14px;
+    -fx-wrap-text: true;
+}
+
+.empty-state-bold {
+    -fx-text-fill: -ds-text-secondary;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.state-block {
+    -fx-padding: 40 24 40 24;
+    -fx-spacing: 8;
+    -fx-alignment: center;
+}
+
+/* ==================== ERROR STATE ==================== */
+
+.error-state {
+    -fx-text-fill: -ds-danger;
+    -fx-font-size: 14px;
+    -fx-wrap-text: true;
+}
+
+.error-banner {
+    -fx-background-color: -ds-danger-subtle;
+    -fx-border-color: -ds-danger;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 10 14;
+    -fx-spacing: 6;
+}
+
+.error-banner-text {
+    -fx-text-fill: -ds-danger;
+    -fx-font-size: 13px;
+    -fx-wrap-text: true;
+}
+
+/* ==================== LOADING STATE ==================== */
+
+.loading-text {
+    -fx-text-fill: -ds-text-muted;
+    -fx-font-size: 14px;
+}
+
+/*
+ * Spinner: a rotating arc. Rotation is driven by the controller
+ * (RotateTransition) because JavaFX CSS has no keyframe support.
+ */
+.spinner {
+    -fx-min-width: 18;
+    -fx-min-height: 18;
+    -fx-pref-width: 18;
+    -fx-pref-height: 18;
+    -fx-max-width: 18;
+    -fx-max-height: 18;
+    -fx-border-color: -ds-border transparent -ds-border -ds-border;
+    -fx-border-width: 2;
+    -fx-border-radius: 50%;
+    -fx-background-radius: 50%;
+}
+
+.spinner-sm {
+    -fx-min-width: 14;
+    -fx-min-height: 14;
+    -fx-pref-width: 14;
+    -fx-pref-height: 14;
+    -fx-max-width: 14;
+    -fx-max-height: 14;
+}
+
+.spinner-accent {
+    -fx-border-color: -ds-brand-contrast transparent -ds-brand-contrast -ds-brand-contrast;
+}
+
+/* Loading row: spinner + label */
+.loading-row {
+    -fx-alignment: center-left;
+    -fx-spacing: 10;
+    -fx-padding: 12;
+}
+
+/* ==================== BADGES ==================== */
+
+.badge {
+    -fx-background-color: -ds-brand;
+    -fx-text-fill: -ds-brand-contrast;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 7;
+    -fx-background-radius: 12;
+    -fx-alignment: center;
+    -fx-max-width: 30;
+}
+
+.badge-muted {
+    -fx-background-color: -ds-surface-active;
+    -fx-text-fill: -ds-text-secondary;
+}
+
+.badge-hidden {
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+}
+
+/* Presence dot (included only when the backend reports the user as online). */
+.presence-dot {
+    -fx-background-color: -ds-success;
+    -fx-background-radius: 50%;
+    -fx-min-width: 10;
+    -fx-min-height: 10;
+    -fx-max-width: 10;
+    -fx-max-height: 10;
+}
+
+/* ==================== TOAST ==================== */
+
+.toast {
+    -fx-background-color: -ds-text-primary;
+    -fx-text-fill: -ds-surface;
+    -fx-background-radius: 8;
+    -fx-padding: 12 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 8, 0, 0, 2);
+}
+
+.toast-success {
+    -fx-background-color: -ds-success;
+}
+
+.toast-error {
+    -fx-background-color: -ds-danger;
+}

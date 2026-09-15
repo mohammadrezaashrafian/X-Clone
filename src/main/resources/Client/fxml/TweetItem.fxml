@@ -6,16 +6,20 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<VBox maxWidth="1.7976931348623157E308" style="-fx-border-color: #eff3f4; -fx-border-width: 0 0 1 0; -fx-padding: 15; -fx-background-color: white;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.TweetItemController">
+<?import java.lang.String?>
+<VBox fx:id="tweetRoot" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.TweetItemController">
+    <styleClass>
+        <String fx:value="tweet-item" />
+        <String fx:value="anim-slide-up" />
+    </styleClass>
     <children>
-        <!-- بدنه اصلی توییت -->
+        <!-- Main tweet body -->
         <HBox maxWidth="1.7976931348623157E308">
             <children>
                 <VBox prefWidth="50.0">
                     <children>
-                        <ImageView fx:id="avatarImageView" fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true" style="-fx-background-radius: 20;" />
+                        <ImageView fx:id="avatarImageView" fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true" styleClass="avatar-rounded" />
                     </children>
                 </VBox>
 
@@ -23,35 +27,28 @@
                     <children>
                         <HBox alignment="CENTER_LEFT" spacing="5.0">
                             <children>
-                                <Label fx:id="displayNameLabel" text="USERNAME" textFill="#0f1419">
-                                    <font>
-                                        <Font name="System Bold" size="15.0" />
-                                    </font>
-                                </Label>
-                                <Label fx:id="usernameLabel" text="ID" textFill="#536471" />
-                                <Label text="•" textFill="#536471" />
-                                <Label fx:id="dateLabel" text="TIME" textFill="#536471" />
+                                <Label fx:id="displayNameLabel" text="USERNAME" styleClass="tweet-display-name" />
+                                <Label fx:id="usernameLabel" text="ID" styleClass="tweet-username" />
+                                <Label text="•" styleClass="tweet-separator" />
+                                <Label fx:id="dateLabel" text="TIME" styleClass="tweet-timestamp" />
                             </children>
                         </HBox>
 
-                        <Label fx:id="tweetTextLabel" maxWidth="1.7976931348623157E308" text="TWEET" textFill="#0f1419" wrapText="true">
-                            <font>
-                                <Font size="15.0" />
-                            </font>
-                        </Label>
+                        <Label fx:id="tweetTextLabel" maxWidth="1.7976931348623157E308" text="TWEET" styleClass="tweet-content" wrapText="true" />
 
-                        <!-- ==================== MEDIA ==================== -->
-                        <ImageView fx:id="mediaImageView" fitWidth="380.0" managed="false" preserveRatio="true" style="-fx-background-radius: 10;" visible="false" />
+                        <!-- MEDIA -->
+                        <ImageView fx:id="mediaImageView" fitWidth="380.0" managed="false" preserveRatio="true" styleClass="tweet-media" visible="false" />
 
-                        <!-- ==================== POLL ==================== -->
-                        <VBox fx:id="pollContainer" managed="false" spacing="6.0" style="-fx-padding: 5 0 5 0;" visible="false" />
+                        <!-- POLL -->
+                        <VBox fx:id="pollContainer" managed="false" spacing="6.0" styleClass="poll-container" visible="false" />
 
-                        <HBox spacing="40.0" style="-fx-padding: 5 0 0 0;">
+                        <HBox spacing="40.0" styleClass="tweet-actions">
                             <children>
-                                <Button fx:id="commentButton" style="-fx-background-color: transparent; -fx-text-fill: #536471; -fx-cursor: hand;" text="💬 0" />
-                                <Button fx:id="retweetButton" style="-fx-background-color: transparent; -fx-text-fill: #536471; -fx-cursor: hand;" text="🔁 0" />
-                                <Button fx:id="likeButton" style="-fx-background-color: transparent; -fx-text-fill: #536471; -fx-cursor: hand;" text="❤ 0" />
-                                <Button fx:id="deleteButton" managed="false" style="-fx-background-color: transparent; -fx-text-fill: #e0245e; -fx-cursor: hand;" text="🗑 Delete" visible="false" />
+                                <Button fx:id="commentButton" styleClass="tweet-action-btn" text="💬 0" />
+                                <Button fx:id="retweetButton" styleClass="tweet-action-btn" text="🔁 0" />
+                                <Button fx:id="likeButton" styleClass="tweet-action-btn" text="❤ 0" />
+                                <Button fx:id="bookmarkButton" styleClass="tweet-action-btn" text="🔖" />
+                                <Button fx:id="deleteButton" managed="false" styleClass="tweet-delete-btn" text="🗑 Delete" visible="false" />
                             </children>
                         </HBox>
                     </children>
@@ -62,6 +59,6 @@
             </children>
         </HBox>
 
-        <VBox fx:id="repliesContainer" managed="false" spacing="10.0" style="-fx-padding: 10 0 0 40.0; -fx-border-color: #eff3f4; -fx-border-width: 1 0 0 0;" visible="false" />
+        <VBox fx:id="repliesContainer" managed="false" spacing="10.0" styleClass="tweet-replies-container" visible="false" />
     </children>
 </VBox>

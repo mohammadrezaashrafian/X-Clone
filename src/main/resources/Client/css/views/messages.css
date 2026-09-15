@@ -1,0 +1,168 @@
+/*
+ * Messages Views
+ * Styles for conversation list, chat messages, and message input.
+ */
+
+/* ==================== MESSAGES SHELL ==================== */
+
+.messages-shell {
+    -fx-background-color: -ds-surface;
+}
+
+/* ==================== CONVERSATION LIST ==================== */
+
+.conversation-list {
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 0 1 0 0;
+}
+
+.conversation-list-scroll {
+    -fx-background-color: transparent;
+    -fx-background: -ds-surface;
+}
+
+.conversation-list-container {
+    -fx-padding: 8;
+    -fx-spacing: 4;
+}
+
+.conversation-card {
+    -fx-padding: 10 12;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+    -fx-transition-duration: 120ms;
+}
+
+.conversation-card:hover {
+    -fx-background-color: -ds-surface-hover;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 4, 0, 0, 2);
+}
+
+.conversation-card-active {
+    -fx-padding: 10 12;
+    -fx-background-color: -ds-brand-subtle;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+    -fx-border-color: -ds-brand;
+    -fx-border-width: 0 0 0 2;
+}
+
+.conversation-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+    -fx-letter-spacing: 0.2;
+}
+
+.conversation-preview {
+    -fx-font-size: 12px;
+    -fx-text-fill: -ds-text-secondary;
+    -fx-wrap-text: true;
+    -fx-line-spacing: 1;
+}
+
+.conversation-unread-badge {
+    -fx-background-color: -ds-brand;
+    -fx-text-fill: -ds-brand-contrast;
+    -fx-font-weight: bold;
+    -fx-padding: 3 7 3 7;
+    -fx-background-radius: 20;
+    -fx-font-size: 11px;
+}
+
+/* ==================== CHAT AREA ==================== */
+
+.chat-header {
+    -fx-padding: 0;
+}
+
+.chat-scroll {
+    -fx-background-color: transparent;
+    -fx-background: -ds-surface;
+}
+
+.chat-messages-container {
+    -fx-padding: 15;
+    -fx-spacing: 10;
+}
+
+/* ==================== MESSAGE BUBBLES ==================== */
+
+.message-bubble {
+    -fx-padding: 8 12 8 12;
+    -fx-background-radius: 14;
+    -fx-wrap-text: true;
+    -fx-max-width: 420;
+    -fx-line-spacing: 2;
+}
+
+.message-bubble-sent {
+    -fx-background-color: -ds-brand;
+    -fx-text-fill: -ds-brand-contrast;
+    -fx-padding: 8 12 8 12;
+    -fx-background-radius: 14;
+    -fx-wrap-text: true;
+    -fx-max-width: 420;
+    -fx-line-spacing: 2;
+}
+
+.message-bubble-received {
+    -fx-background-color: -ds-border-light;
+    -fx-text-fill: -ds-text-primary;
+    -fx-padding: 8 12 8 12;
+    -fx-background-radius: 14;
+    -fx-wrap-text: true;
+    -fx-max-width: 420;
+    -fx-line-spacing: 2;
+}
+
+.message-timestamp {
+    -fx-font-size: 10px;
+    -fx-text-fill: -ds-text-muted;
+    -fx-letter-spacing: 0.3;
+}
+
+.message-edited {
+    -fx-font-size: 10px;
+    -fx-text-fill: -ds-text-muted;
+}
+
+/* ==================== MESSAGE INPUT ==================== */
+
+.message-input-container {
+    -fx-padding: 15;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 1 0 0 0;
+}
+
+.message-input-field {
+    -fx-background-color: -ds-surface-muted;
+    -fx-background-radius: 20;
+    -fx-padding: 10 15 10 15;
+    -fx-prompt-text-fill: -ds-text-muted;
+}
+
+.message-input-field:focused {
+    -fx-background-color: -ds-surface;
+    -fx-border-color: -ds-brand;
+    -fx-border-radius: 20;
+    -fx-border-width: 1;
+}
+
+.message-send-btn {
+    -fx-background-color: -ds-brand;
+    -fx-text-fill: -ds-brand-contrast;
+    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.message-send-btn:hover {
+    -fx-background-color: -ds-brand-hover;
+}
+
+.message-send-btn:disabled {
+    -fx-background-color: -ds-border;
+    -fx-text-fill: -ds-text-secondary;
+    -fx-cursor: default;
+}

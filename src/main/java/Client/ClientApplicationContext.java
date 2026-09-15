@@ -2,7 +2,9 @@ package Client;
 
 import Client.Service.*;
 import Client.config.ServerConfig;
+import Client.controllers.MainLayoutController;
 import Client.session.ClientSession;
+import Client.theme.ThemeManager;
 import Client.transport.SocketClient;
 
 import lombok.Getter;
@@ -24,6 +26,8 @@ public final class ClientApplicationContext implements AutoCloseable
     private final SocketClient socketClient;
     private final ExecutorService networkExecutor;
     @Setter private NavigationManager navigationManager;
+    @Getter private final ThemeManager themeManager;
+    @Setter private MainLayoutController mainLayoutController;
     @Getter private final TimelineClientService timelineService;
     @Getter private final BookmarkClientService bookmarkClientService;
     @Getter private final RelationClientService relationClientService;
@@ -47,6 +51,7 @@ public final class ClientApplicationContext implements AutoCloseable
             return t;
         });
 
+        this.themeManager = new ThemeManager();
         this.timelineService = new TimelineClientService(this);
         this.bookmarkClientService = new BookmarkClientService(this);
         this.tweetService = new TweetClientService(this);

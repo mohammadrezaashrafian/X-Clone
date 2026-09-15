@@ -41,10 +41,8 @@ public class UserProfileController {
     public void initialize() {
 
         followingCountLabel.setOnMouseClicked(e -> openUserList("Following", false));
-        followingCountLabel.setStyle("-fx-cursor: hand;");
 
         followersCountLabel.setOnMouseClicked(e -> openUserList("Followers", true));
-        followersCountLabel.setStyle("-fx-cursor: hand;");
     }
 
     public void setProfileData(ProfileInfoResponse profile) {
@@ -130,7 +128,11 @@ public class UserProfileController {
 
                 updateFollowersLabel();
                 updateFollowButtonState();
+
+                return;
             }
+
+            reloadFollowWidgets();
 
         })).exceptionally(error -> {
 
@@ -149,17 +151,30 @@ public class UserProfileController {
         });
     }
 
+    /**
+     * The follow graph changed, so the shell widgets that read it must refetch.
+     */
+    private void reloadFollowWidgets() {
+
+        MainLayoutController shell = context.getMainLayoutController();
+
+        if (shell != null) {
+            shell.reloadFollowWidgets();
+        }
+    }
+
     private void updateFollowersLabel() {
         followersCountLabel.setText(followersCount + " Followers");
     }
 
     private void updateFollowButtonState() {
+        followButton.getStyleClass().removeAll("user-profile-follow-btn", "user-profile-following-btn");
         if (isFollowing) {
             followButton.setText("Following");
-            followButton.setStyle("-fx-background-color: transparent; -fx-border-color: #cfd9de; -fx-border-radius: 20; -fx-text-fill: #0f1419; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-cursor: hand;");
+            followButton.getStyleClass().add("user-profile-following-btn");
         } else {
             followButton.setText("Follow");
-            followButton.setStyle("-fx-background-color: #0f1419; -fx-text-fill: white; -fx-background-radius: 20; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-cursor: hand;");
+            followButton.getStyleClass().add("user-profile-follow-btn");
         }
     }
 
@@ -185,7 +200,14 @@ public class UserProfileController {
         if (context == null || context.navigation() == null)
             return;
 
-        // TODO
+        if (isFollowers)
+        {
+            context.navigation().navigate(Client.navigation.NavigationRoute.FOLLOWERS);
+        }
+        else
+        {
+            context.navigation().navigate(Client.navigation.NavigationRoute.FOLLOWING);
+        }
     }
 
     private String nullSafe(String value) {

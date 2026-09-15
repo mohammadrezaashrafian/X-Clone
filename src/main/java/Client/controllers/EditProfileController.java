@@ -1,9 +1,11 @@
 package Client.controllers;
 
+import Client.AvatarLoader;
 import Client.ClientApplicationContext;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -19,7 +21,6 @@ import logic_core.app.dto.response.UpdateCompleteProfileResponse;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.util.Locale;
 import java.util.UUID;
@@ -82,6 +83,18 @@ public class EditProfileController {
         loadCurrentUserData();
     }
 
+    /**
+     * Ensures the modal scene uses the same theme system as the rest of the
+     * application. Call this once before showing the dialog.
+     */
+    public void attachToTheme(Scene scene)
+    {
+        if (scene != null)
+        {
+            context.getThemeManager().attach(scene);
+        }
+    }
+
     @FXML
     private void loadCurrentUserData() {
         UUID userId = context.session().getCurrentUserId();
@@ -127,46 +140,7 @@ public class EditProfileController {
     }
 
     private void loadAvatarPreview(String avatarUrl) {
-        if (avatarUrl != null && !avatarUrl.isBlank()) {
-            try {
-                String cleanPath = avatarUrl.startsWith("/") || avatarUrl.startsWith("\\")
-                        ? avatarUrl.substring(1)
-                        : avatarUrl;
-
-                File avatarFile = new File("data", cleanPath);
-
-                if (!avatarFile.exists()) {
-                    String userDir = System.getProperty("user.dir");
-                    avatarFile = new File(userDir + File.separator + "data", cleanPath);
-                }
-
-                if (avatarFile.exists()) {
-                    avatarPreview.setImage(new Image(avatarFile.toURI().toString(), true));
-                    return;
-                } else {
-                    log.warning("Avatar preview file NOT found on disk: " + avatarFile.getAbsolutePath());
-                }
-            } catch (Exception e) {
-                log.warning("Failed to load current avatar preview: " + e.getMessage());
-            }
-        }
-
-        setDefaultAvatar();
-    }
-
-    private void setDefaultAvatar() {
-        try {
-            URL resource = getClass().getResource(DEFAULT_AVATAR_RESOURCE);
-            if (resource != null) {
-                avatarPreview.setImage(new Image(resource.toExternalForm(), true));
-            } else {
-                avatarPreview.setImage(null);
-                log.warning("Default avatar resource not found at: " + DEFAULT_AVATAR_RESOURCE);
-            }
-        } catch (Exception e) {
-            avatarPreview.setImage(null);
-            log.warning("Failed to load default avatar: " + e.getMessage());
-        }
+        AvatarLoader.loadAvatar(avatarPreview, avatarUrl);
     }
 
     @FXML
@@ -269,6 +243,18 @@ public class EditProfileController {
                     UpdateCompleteProfileResponse response = result.getData();
                     if (response != null && response.profile() != null) {
                         log.info("Profile updated successfully. Returned AvatarUrl: " + response.profile().avatarUrl());
+
+                    // Propagate avatar change to the shell components that own
+                    // their own avatar loading so the sidebar and compose card
+                    // update immediately instead of waiting for the next mount.
+                    if (context.getMainLayoutController() != null)
+                    {
+                        // Refresh the shell widgets and push the new avatar into
+                        // the tweet cards already on screen (no reload needed).
+                        context.getMainLayoutController().onCurrentUserProfileUpdated(
+                                response.profile().avatarUrl()
+                        );
+                    }
                     } else {
                         log.info("Profile updated successfully.");
                     }

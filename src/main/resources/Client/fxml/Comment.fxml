@@ -5,46 +5,33 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<VBox prefWidth="520.0" spacing="15.0" style="-fx-background-color: #ffffff; -fx-background-radius: 16; -fx-padding: 20;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.CommentController">
+<VBox prefWidth="520.0" spacing="15.0" styleClass="comment-dialog" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.CommentController">
     <children>
-        <Label text="Reply to Tweet" textFill="#0f1419">
-            <font>
-                <Font name="System Bold" size="18.0" />
-            </font>
-        </Label>
+        <Label text="Reply to Tweet" styleClass="text-title-lg" />
 
-        <HBox spacing="10.0" style="-fx-padding: 0 0 10 0; -fx-border-color: #eff3f4; -fx-border-width: 0 0 1 0;">
+        <HBox spacing="10.0" styleClass="comment-target">
             <children>
                 <VBox spacing="4.0">
                     <children>
                         <HBox alignment="CENTER_LEFT" spacing="6.0">
                             <children>
-                                <Label fx:id="targetDisplayNameLabel" text="User Name" textFill="#0f1419">
-                                    <font>
-                                        <Font name="System Bold" size="14.0" />
-                                    </font>
-                                </Label>
-                                <Label fx:id="targetUsernameLabel" text="\@username" textFill="#536471" />
+                                <Label fx:id="targetDisplayNameLabel" text="User Name" styleClass="comment-target-author" />
+                                <Label fx:id="targetUsernameLabel" text="\@username" styleClass="comment-target-username" />
                             </children>
                         </HBox>
-                        <Label fx:id="targetTweetTextLabel" text="Original tweet text preview..." textFill="#0f1419" wrapText="true" />
+                        <Label fx:id="targetTweetTextLabel" text="Original tweet text preview..." styleClass="comment-target-text" wrapText="true" />
                     </children>
                 </VBox>
             </children>
         </HBox>
 
-        <TextArea fx:id="commentTextArea" prefRowCount="3" promptText="Post your reply..." style="-fx-background-color: transparent; -fx-border-color: #cfd9de; -fx-border-radius: 10; -fx-padding: 5;" wrapText="true">
-            <font>
-                <Font size="15.0" />
-            </font>
-        </TextArea>
+        <TextArea fx:id="commentTextArea" prefRowCount="3" promptText="Post your reply..." styleClass="comment-textarea" wrapText="true" />
 
         <HBox alignment="CENTER_RIGHT" spacing="12.0">
             <children>
-                <Button onAction="#handleCancel" style="-fx-background-color: transparent; -fx-text-fill: #0f1419; -fx-font-weight: bold; -fx-cursor: hand;" text="Cancel" />
-                <Button onAction="#handleSubmitComment" style="-fx-background-color: #1d9bf0; -fx-text-fill: #ffffff; -fx-background-radius: 20; -fx-font-weight: bold; -fx-padding: 8 20 8 20; -fx-cursor: hand;" text="Reply" />
+                <Button onAction="#handleCancel" styleClass="btn-ghost" text="Cancel" />
+                <Button onAction="#handleSubmitComment" styleClass="btn-primary" text="Reply" />
             </children>
         </HBox>
     </children>

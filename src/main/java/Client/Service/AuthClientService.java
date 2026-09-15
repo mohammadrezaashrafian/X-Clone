@@ -129,6 +129,32 @@ public final class AuthClientService
         );
     }
 
+    public CompletableFuture<AuthResult<EmailVerificationConfirmResponse>> confirmEmailVerification(String code)
+    {
+        ConfirmEmailVerificationRequest request =
+                new ConfirmEmailVerificationRequest(session.getToken(), code);
+        return execute(
+                RequestType.EMAIL_VERIFY_CONFIRM,
+                request,
+                EmailVerificationConfirmResponse.class,
+                false,
+                false
+        );
+    }
+
+    public CompletableFuture<AuthResult<EmailVerificationRequestResponse>> requestEmailVerification()
+    {
+        RequestEmailVerificationRequest request =
+                new RequestEmailVerificationRequest(session.getToken());
+        return execute(
+                RequestType.EMAIL_VERIFY_REQUEST,
+                request,
+                EmailVerificationRequestResponse.class,
+                false,
+                false
+        );
+    }
+
 
     private <T> CompletableFuture<AuthResult<T>> execute(
             RequestType requestType,

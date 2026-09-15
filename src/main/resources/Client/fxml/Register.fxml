@@ -11,112 +11,286 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<StackPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="650.0" prefWidth="850.0" style="-fx-background-color: linear-gradient(to bottom, #fcf2e2 0%, #ffffff 100%);" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.RegisterController">
+<?import java.lang.String?>
+<StackPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="700.0" prefWidth="900.0" styleClass="auth-page" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.RegisterController">
     <children>
-        <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="420.0" spacing="14.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 25, 0.5, 0, 10); -fx-padding: 30 35 30 35;">
+        <VBox alignment="CENTER"
+              maxWidth="420.0"
+              spacing="0.0"
+              styleClass="auth-card">
             <children>
-                <ImageView fx:id="logoImageView" fitHeight="45.0" fitWidth="45.0" pickOnBounds="true" preserveRatio="true">
-                    <image>
-                        <Image url="@../images/x-logo-1.png" />
-                    </image>
-                </ImageView>
+                <!-- Branding -->
+                <VBox alignment="CENTER"
+                      spacing="12.0"
+                      styleClass="auth-brand">
+                    <children>
+                        <StackPane alignment="CENTER"
+                                   styleClass="auth-logo">
+                            <children>
+                                <ImageView fx:id="logoImageView"
+                                           fitHeight="48.0"
+                                           fitWidth="48.0"
+                                           pickOnBounds="true"
+                                           preserveRatio="true"/>
+                            </children>
+                        </StackPane>
 
-                <Label text="Create your account" textFill="#111111">
-                    <font>
-                        <Font name="System Bold" size="26.0" />
-                    </font>
+                        <Label styleClass="auth-title"
+                               text="Create your account">
+                            <VBox.margin>
+                                <Insets bottom="2.0"/>
+                            </VBox.margin>
+                        </Label>
+
+                        <Label alignment="CENTER"
+                               prefWidth="310.0"
+                               text="Join today and stay connected."
+                               textAlignment="CENTER"
+                               styleClass="auth-subtitle"
+                               wrapText="true"/>
+
+                    </children>
+
                     <VBox.margin>
-                        <Insets bottom="2.0" />
+                        <Insets bottom="8.0"/>
                     </VBox.margin>
-                </Label>
 
-                <HBox alignment="CENTER_LEFT" prefHeight="45.0" prefWidth="310.0" style="-fx-border-color: #e0e0e0; -fx-border-radius: 25; -fx-background-radius: 25; -fx-background-color: #fafafa; -fx-padding: 0 15 0 15;">
+                </VBox>
+
+                <!-- Inputs -->
+                <VBox spacing="16.0"
+                      styleClass="auth-input-wrapper">
                     <children>
-                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true" style="-fx-opacity: 0.6;">
-                            <image>
-                                <Image url="@../images/user (1).png" />
-                            </image>
-                        </ImageView>
-                        <TextField fx:id="displayNameField" prefHeight="40.0" promptText="Display Name " style="-fx-background-color: transparent; -fx-padding: 5 10 5 10;" HBox.hgrow="ALWAYS">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                        </TextField>
-                    </children>
-                </HBox>
 
-                <HBox alignment="CENTER_LEFT" prefHeight="45.0" prefWidth="310.0" style="-fx-border-color: #e0e0e0; -fx-border-radius: 25; -fx-background-radius: 25; -fx-background-color: #fafafa; -fx-padding: 0 15 0 15;">
+                        <!-- Display Name -->
+                        <HBox alignment="CENTER_LEFT"
+                              prefHeight="52.0"
+                              styleClass="auth-input-container">
+                            <children>
+                                <ImageView                           fitHeight="18.0"
+                                           fitWidth="18.0"
+                                           preserveRatio="true">
+            <styleClass>
+                <String fx:value="auth-input-icon"/>
+            </styleClass>
+
+                                    <image>
+                                        <Image url="@../images/user (1).png"/>
+                                    </image>
+
+                                </ImageView>
+
+                                <TextField fx:id="displayNameField"
+                                           prefHeight="48.0"
+                                           promptText="Display Name"
+                                           styleClass="auth-input-field"
+                                           HBox.hgrow="ALWAYS"/>
+
+                            </children>
+                        </HBox>
+
+                        <!-- Username -->
+                        <HBox alignment="CENTER_LEFT"
+                              prefHeight="52.0"
+                              styleClass="auth-input-container">
+                            <children>
+                                <ImageView                           fitHeight="18.0"
+                                           fitWidth="18.0"
+                                           preserveRatio="true">
+            <styleClass>
+                <String fx:value="auth-input-icon"/>
+            </styleClass>
+
+                                    <image>
+                                        <Image url="@../images/user (1).png"/>
+                                    </image>
+
+                                </ImageView>
+
+                                <TextField fx:id="usernameField"
+                                           prefHeight="48.0"
+                                           promptText="Username"
+                                           styleClass="auth-input-field"
+                                           HBox.hgrow="ALWAYS"/>
+
+                            </children>
+                        </HBox>
+
+                        <!-- Email -->
+                        <HBox alignment="CENTER_LEFT"
+                              prefHeight="52.0"
+                              styleClass="auth-input-container">
+                            <children>
+                                <ImageView                           fitHeight="18.0"
+                                           fitWidth="18.0"
+                                           preserveRatio="true">
+            <styleClass>
+                <String fx:value="auth-input-icon"/>
+            </styleClass>
+
+                                    <image>
+                                        <Image url="@../images/email.png"/>
+                                    </image>
+
+                                </ImageView>
+
+                                <TextField fx:id="emailField"
+                                           prefHeight="48.0"
+                                           promptText="Email Address"
+                                           styleClass="auth-input-field"
+                                           HBox.hgrow="ALWAYS"/>
+
+                            </children>
+                        </HBox>
+
+                        <!-- Password -->
+                        <HBox alignment="CENTER_LEFT"
+                              prefHeight="52.0"
+                              styleClass="auth-input-container">
+                            <children>
+                                <ImageView                           fitHeight="18.0"
+                                           fitWidth="18.0"
+                                           preserveRatio="true">
+            <styleClass>
+                <String fx:value="auth-input-icon"/>
+            </styleClass>
+
+                                    <image>
+                                        <Image url="@../images/lock.png"/>
+                                    </image>
+
+                                </ImageView>
+
+                                <PasswordField fx:id="passwordField"
+                                               prefHeight="48.0"
+                                               promptText="Password"
+                                               styleClass="auth-input-field"
+                                               HBox.hgrow="ALWAYS"/>
+
+                            </children>
+                        </HBox>
+
+                        <!-- Confirm Password -->
+                        <HBox alignment="CENTER_LEFT"
+                              prefHeight="52.0"
+                              styleClass="auth-input-container">
+                            <children>
+                                <ImageView                           fitHeight="18.0"
+                                           fitWidth="18.0"
+                                           preserveRatio="true">
+            <styleClass>
+                <String fx:value="auth-input-icon"/>
+            </styleClass>
+
+                                    <image>
+                                        <Image url="@../images/lock.png"/>
+                                    </image>
+
+                                </ImageView>
+
+                                <PasswordField fx:id="confirmPasswordField"
+                                               prefHeight="48.0"
+                                               promptText="Confirm Password"
+                                               styleClass="auth-input-field"
+                                               HBox.hgrow="ALWAYS"/>
+
+                            </children>
+                        </HBox>
+
+                    </children>
+                </VBox>
+
+                <!-- Error -->
+                <VBox fx:id="errorContainer"
+                      alignment="CENTER_LEFT"
+                      managed="false"
+                      visible="false"
+                      styleClass="auth-error-banner">
                     <children>
-                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true" style="-fx-opacity: 0.6;">
-                            <image>
-                                <Image url="@../images/user (1).png" />
-                            </image>
-                        </ImageView>
-                        <TextField fx:id="usernameField" prefHeight="40.0" promptText="Username" style="-fx-background-color: transparent; -fx-padding: 5 10 5 10;" HBox.hgrow="ALWAYS">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                        </TextField>
+                        <Label fx:id="errorLabel"
+                               wrapText="true"
+                               styleClass="auth-error-text"/>
                     </children>
-                </HBox>
 
-                <HBox alignment="CENTER_LEFT" prefHeight="45.0" prefWidth="310.0" style="-fx-border-color: #e0e0e0; -fx-border-radius: 25; -fx-background-radius: 25; -fx-background-color: #fafafa; -fx-padding: 0 15 0 15;">
-                    <children>
-                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true" style="-fx-opacity: 0.6;">
-                            <image>
-                                <Image url="@../images/email.png" />
-                            </image>
-                        </ImageView>
-                        <TextField fx:id="emailField" prefHeight="40.0" promptText="Email Address" style="-fx-background-color: transparent; -fx-padding: 5 10 5 10;" HBox.hgrow="ALWAYS">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                        </TextField>
-                    </children>
-                </HBox>
-
-                <HBox alignment="CENTER_LEFT" prefHeight="45.0" prefWidth="310.0" style="-fx-border-color: #e0e0e0; -fx-border-radius: 25; -fx-background-radius: 25; -fx-background-color: #fafafa; -fx-padding: 0 15 0 15;">
-                    <children>
-                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true" style="-fx-opacity: 0.6;">
-                            <image>
-                                <Image url="@../images/lock.png" />
-                            </image>
-                        </ImageView>
-                        <PasswordField fx:id="passwordField" prefHeight="40.0" promptText="Password" style="-fx-background-color: transparent; -fx-padding: 5 10 5 10;" HBox.hgrow="ALWAYS">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                        </PasswordField>
-                    </children>
-                </HBox>
-
-                <HBox alignment="CENTER_LEFT" prefHeight="45.0" prefWidth="310.0" style="-fx-border-color: #e0e0e0; -fx-border-radius: 25; -fx-background-radius: 25; -fx-background-color: #fafafa; -fx-padding: 0 15 0 15;">
-                    <children>
-                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true" style="-fx-opacity: 0.6;">
-                            <image>
-                                <Image url="@../images/lock.png" />
-                            </image>
-                        </ImageView>
-                        <PasswordField fx:id="confirmPasswordField" prefHeight="40.0" promptText="Confirm Password" style="-fx-background-color: transparent; -fx-padding: 5 10 5 10;" HBox.hgrow="ALWAYS">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                        </PasswordField>
-                    </children>
-                </HBox>
-
-                <Button fx:id="signUpButton" defaultButton="true" mnemonicParsing="false" onAction="#handleRegister" prefWidth="350.0" style="-fx-background-color: #28cf69; -fx-text-fill: white; -fx-background-radius: 25; -fx-border-radius: 25; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 12; -fx-cursor: hand;" text="Sign up" />
-
-                <HBox alignment="CENTER" spacing="5.0">
-                    <children>
-                        <Hyperlink fx:id="backToLoginLink" alignment="CENTER" onAction="#handleBackToLogin" styleClass="sign-up-link" stylesheets="@../css/style.css" text="Already have an account? Log in" />
-                    </children>
                     <VBox.margin>
-                        <Insets top="2.0" />
+                        <Insets top="4.0"/>
                     </VBox.margin>
+
+                </VBox>
+
+
+                <!-- Sign Up Button -->
+                <Button fx:id="signUpButton"
+                        maxWidth="1.7976931348623157E308"
+                        mnemonicParsing="false"
+                        onAction="#handleRegister"
+                        styleClass="auth-submit-btn"
+                        text="Sign up">
+
+                    <VBox.margin>
+                        <Insets top="8.0"/>
+                    </VBox.margin>
+
+                </Button>
+
+
+                <!-- Auth Links -->
+                <HBox alignment="CENTER"
+                      spacing="24.0"
+                      styleClass="auth-links">
+                    <children>
+
+                        <!-- Only show the back-to-login link from Register. -->
+                        <Hyperlink fx:id="backToLoginLink"
+                                   alignment="CENTER"
+                                   onAction="#handleBackToLogin"
+                                   styleClass="auth-link"
+                                   text="Already have an account? Log in"/>
+
+                    </children>
                 </HBox>
+
+
+                <!-- Footer -->
+                <VBox alignment="CENTER"
+                      spacing="8.0"
+                      styleClass="auth-footer">
+                    <children>
+                        <HBox alignment="CENTER"
+                              spacing="16.0"
+                              styleClass="auth-footer-links">
+                            <children>
+
+                                <Hyperlink onAction="#handleOpenGitHub"
+                                           styleClass="auth-footer-link"
+                                           text="GitHub"
+                                           disable="true"/>
+
+                                <Label text="|"
+                                       styleClass="auth-divider-text"/>
+
+                                <Hyperlink onAction="#handleOpenDocumentation"
+                                           styleClass="auth-footer-link"
+                                           text="Documentation"
+                                           disable="true"/>
+
+                                <Label text="|"
+                                       styleClass="auth-divider-text"/>
+
+                                <Label text="Version 2.1.0"
+                                       styleClass="auth-footer-version"/>
+
+                            </children>
+                        </HBox>
+                    </children>
+
+                    <VBox.margin>
+                        <Insets top="8.0"/>
+                    </VBox.margin>
+
+                </VBox>
+
             </children>
         </VBox>
     </children>

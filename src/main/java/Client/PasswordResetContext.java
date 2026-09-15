@@ -2,10 +2,14 @@ package Client;
 
 public final class PasswordResetContext
 {
+    /** Distinguishes password-reset verification from registration email verification. */
+    public enum VerificationMode { PASSWORD_RESET, REGISTRATION }
+
     private static final PasswordResetContext INSTANCE = new PasswordResetContext();
 
     private String email;
     private String code;
+    private VerificationMode verificationMode;
 
     private PasswordResetContext()
     {
@@ -36,10 +40,21 @@ public final class PasswordResetContext
         this.code = normalize(code);
     }
 
+    public synchronized VerificationMode getVerificationMode()
+    {
+        return verificationMode;
+    }
+
+    public synchronized void setVerificationMode(VerificationMode mode)
+    {
+        this.verificationMode = mode;
+    }
+
     public synchronized void clear()
     {
         email = null;
         code = null;
+        verificationMode = null;
     }
 
     public synchronized boolean hasEmail()

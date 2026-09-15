@@ -7,59 +7,60 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="450.0" style="-fx-background-color: #ffffff;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.UserProfileController">
+<?import java.lang.String?>
+<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="450.0" styleClass="page-surface" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.UserProfileController">
     <children>
-        <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-border-color: #eff3f4; -fx-border-width: 0 0 1 0; -fx-padding: 10 20 10 20;">
+        <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="section-title-compact">
             <children>
                 <VBox>
                     <children>
-                        <Label fx:id="headerNameLabel" text="User Name" textFill="#0f1419">
-                            <font>
-                                <Font name="System Bold" size="18.0" />
-                            </font>
-                        </Label>
-                        <Label fx:id="tweetCountLabel" text="0 Tweets" textFill="#536471" />
+                        <Label fx:id="headerNameLabel" text="User Name" styleClass="text-title-lg" />
+                        <Label fx:id="tweetCountLabel" text="0 Tweets" styleClass="text-meta" />
                     </children>
                 </VBox>
             </children>
         </HBox>
 
-        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: #ffffff; -fx-hbar-policy: NEVER;" VBox.vgrow="ALWAYS">
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+            <styleClass>
+                <String fx:value="scroll-pane-transparent" />
+                <String fx:value="scroll-pane-no-hbar" />
+            </styleClass>
             <content>
                 <VBox spacing="15.0">
                     <children>
-                        <Pane prefHeight="120.0" style="-fx-background-color: #cfd9de;" />
+                        <Pane prefHeight="120.0" styleClass="profile-banner-placeholder" />
 
-                        <HBox alignment="BOTTOM_LEFT" spacing="10.0" style="-fx-padding: 0 20 0 20;">
+                        <HBox alignment="BOTTOM_LEFT" spacing="10.0" styleClass="profile-actions-section">
                             <children>
-                                <ImageView fx:id="userAvatarImageView" fitHeight="80.0" fitWidth="80.0" pickOnBounds="true" preserveRatio="true" style="-fx-background-radius: 40; -fx-border-color: white; -fx-border-width: 3; -fx-translate-y: -30;" />
+                                <ImageView fx:id="userAvatarImageView" fitHeight="80.0" fitWidth="80.0" pickOnBounds="true" preserveRatio="true">
+                                    <styleClass>
+                                        <String fx:value="profile-avatar-wrapper" />
+                                        <String fx:value="profile-avatar-overlap" />
+                                    </styleClass>
+                                </ImageView>
                                 <Pane HBox.hgrow="ALWAYS" />
-                                <Button fx:id="followButton" onAction="#handleFollowToggle" style="-fx-background-color: #0f1419; -fx-text-fill: white; -fx-background-radius: 20; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-cursor: hand;" text="Follow" />
+                                <Button fx:id="followButton" onAction="#handleFollowToggle" styleClass="user-profile-follow-btn" text="Follow" />
                             </children>
                         </HBox>
 
-                        <VBox spacing="8.0" style="-fx-padding: 0 20 0 20;">
+                        <VBox spacing="8.0" styleClass="profile-info-section">
                             <children>
-                                <Label fx:id="displayNameLabel" text="Display Name" textFill="#0f1419">
-                                    <font>
-                                        <Font name="System Bold" size="20.0" />
-                                    </font>
-                                </Label>
-                                <Label fx:id="usernameLabel" text="\@username" textFill="#536471" />
-                                <Label fx:id="bioLabel" text="User bio goes here..." textFill="#0f1419" wrapText="true" />
+                                <Label fx:id="displayNameLabel" text="Display Name" styleClass="text-heading" />
+                                <Label fx:id="usernameLabel" text="\@username" styleClass="text-meta" />
+                                <Label fx:id="bioLabel" text="User bio goes here..." styleClass="text-body" wrapText="true" />
 
-                                <HBox spacing="20.0" style="-fx-padding: 5 0 0 0;">
+                                <HBox spacing="20.0" styleClass="profile-stats">
                                     <children>
-                                        <Label fx:id="followingCountLabel" style="-fx-font-weight: bold;" text="0 Following" textFill="#0f1419" />
-                                        <Label fx:id="followersCountLabel" style="-fx-font-weight: bold;" text="0 Followers" textFill="#0f1419" />
+                                        <Label fx:id="followingCountLabel" styleClass="profile-stat-count" text="0 Following" />
+                                        <Label fx:id="followersCountLabel" styleClass="profile-stat-count" text="0 Followers" />
                                     </children>
                                 </HBox>
                             </children>
                         </VBox>
 
-                        <VBox fx:id="userTweetsContainer" spacing="10.0" style="-fx-padding: 10 0 0 0; -fx-border-color: #eff3f4; -fx-border-width: 1 0 0 0;" />
+                        <VBox fx:id="userTweetsContainer" spacing="10.0" styleClass="tweet-replies-container" />
                     </children>
                 </VBox>
             </content>

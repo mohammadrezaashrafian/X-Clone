@@ -1,0 +1,64 @@
+/*
+ * Animations
+ * Entry-state helper classes for the transitions controllers run.
+ *
+ * JavaFX CSS has no keyframes or transitions, so these classes only declare
+ * the *starting* state of an animation; the controller animates the node to
+ * its final state with a FadeTransition / TranslateTransition. The shared
+ * durations live in `-ds-transition-*` design tokens.
+ *
+ * Convention: the FXML node carries the `anim-*` class, the controller runs
+ * the transition and the class can then be removed.
+ */
+
+/* Fade in */
+.anim-fade {
+    -fx-opacity: 0;
+}
+
+/* Fade in + slide up (cards, widgets, list items) */
+.anim-slide-up {
+    -fx-opacity: 0;
+    -fx-translate-y: 16;
+}
+
+/* Scale in (dialogs) */
+.anim-scale-in {
+    -fx-opacity: 0;
+    -fx-scale-x: 0.96;
+    -fx-scale-y: 0.96;
+}
+
+/* ==================== HOVER FEEDBACK ==================== */
+
+/*
+ * Hover elevation. The node must be laid out with layoutX/Y (not translate),
+ * because the controller animates -fx-translate-y.
+ */
+.hover-lift {
+    -fx-cursor: hand;
+}
+
+.hover-lift:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.18), 18, 0, 0, 6);
+}
+
+/* Sidebar / card row hover tint. */
+.hover-tint:hover {
+    -fx-background-color: -ds-surface-hover;
+}
+
+/*
+ * NOTE: JavaFX CSS has no @keyframes and no -fx-animation property, so the
+ * "enter" rules that previously lived here were dead and produced CSS parse
+ * errors on every stylesheet load. Entry animations are driven by the
+ * controllers (FadeTransition / TranslateTransition), which is why the anim-*
+ * classes above only declare a start state.
+ */
+
+/* ==================== WIDGET TRANSITIONS ==================== */
+
+/* Scene container inside the utility widget: the controller crossfades. */
+.widget-scene {
+    -fx-opacity: 1;
+}

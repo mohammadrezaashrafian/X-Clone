@@ -1,0 +1,237 @@
+/*
+ * Application Shell View
+ * Composition styles for the shell pieces introduced with the 3-column
+ * layout: the sidebar compose card, the utility panel, its animated widget
+ * and the search results stack.
+ */
+
+/* Subtle separator before compose card in sidebar */
+.sidebar-compose-separator {
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 6 0 0 0;
+}
+
+/* ==================== SIDEBAR COMPOSE CARD ==================== */
+
+.compose-card {
+    -fx-background-color: -ds-surface-muted;
+    -fx-background-radius: 16;
+    -fx-padding: 14 14 12 14;
+    -fx-spacing: 10;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 8, 0, 0, 3);
+}
+
+.compose-card:hover {
+    -fx-background-color: -ds-surface-hover;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 14, 0, 0, 5);
+}
+
+.compose-card-header {
+    -fx-alignment: center-left;
+    -fx-spacing: 10;
+}
+
+.compose-card-avatar {
+    -fx-background-radius: 18;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 4, 0, 0, 2);
+}
+
+.compose-card-placeholder {
+    -fx-text-fill: -ds-text-secondary;
+    -fx-font-size: 15px;
+    -fx-font-weight: 500;
+}
+
+.compose-card-footer {
+    -fx-alignment: center-right;
+    -fx-padding: 0 2 0 0;
+}
+
+/* ==================== UTILITY PANEL ==================== */
+
+.utility-brand {
+    -fx-alignment: center-left;
+    -fx-spacing: 10;
+    -fx-padding: 6 4 12 4;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 0 0 1 0;
+}
+
+.utility-brand-name {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+}
+
+.utility-brand-version {
+    -fx-font-size: 11px;
+    -fx-text-fill: -ds-text-muted;
+    -fx-letter-spacing: 0.5;
+}
+
+.utility-stack {
+    -fx-spacing: 12;
+}
+
+.search-results-container {
+    -fx-spacing: 8;
+}
+
+/* ==================== DYNAMIC WIDGET ==================== */
+
+.widget-card {
+    -fx-background-color: -ds-surface-muted;
+    -fx-background-radius: 16;
+    -fx-padding: 16 16 14 16;
+    -fx-spacing: 12;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 6, 0, 0, 2);
+}
+
+.widget-header {
+    -fx-alignment: center-left;
+    -fx-spacing: 8;
+}
+
+.widget-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+}
+
+.widget-dots {
+    -fx-alignment: center;
+    -fx-spacing: 5;
+    -fx-padding: 0 0 2 0;
+}
+
+.widget-dot {
+    -fx-background-color: -ds-border;
+    -fx-background-radius: 50%;
+    -fx-min-width: 6;
+    -fx-min-height: 6;
+    -fx-max-width: 6;
+    -fx-max-height: 6;
+    -fx-opacity: 0.5;
+}
+
+.widget-dot-active {
+    -fx-background-color: -ds-brand;
+    -fx-opacity: 1;
+}
+
+.widget-scene-body {
+    -fx-spacing: 4;
+}
+
+/* Suggested / followed person row */
+.widget-row {
+    -fx-alignment: center-left;
+    -fx-spacing: 10;
+    -fx-padding: 6;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-transition-duration: 150ms;
+}
+
+.widget-row:hover {
+    -fx-background-color: -ds-surface-hover;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 6, 0, 0, 2);
+}
+
+.widget-row-names {
+    -fx-spacing: 1;
+}
+
+.widget-row-name {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+}
+
+.widget-row-handle {
+    -fx-font-size: 12px;
+    -fx-text-fill: -ds-text-secondary;
+}
+
+/* Conversation row */
+.widget-row-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+}
+
+.widget-row-message {
+    -fx-font-size: 12px;
+    -fx-text-fill: -ds-text-secondary;
+}
+
+.widget-empty {
+    -fx-text-fill: -ds-text-muted;
+    -fx-font-size: 12px;
+    -fx-padding: 6 4 6 4;
+    -fx-wrap-text: true;
+}
+
+/* ==================== FOLLOW BUTTON (WHO TO FOLLOW ROW) ==================== */
+
+.widget-row-follow {
+    -fx-background-color: -ds-brand;
+    -fx-text-fill: -ds-brand-contrast;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 999;
+    -fx-border-color: null;
+    -fx-padding: 4 10;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(29,155,240,0.35), 8, 0, 0, 2);
+}
+
+.widget-row-follow:hover {
+    -fx-background-color: -ds-brand-hover;
+}
+
+.widget-row-follow:pressed {
+    -fx-background-color: -ds-brand-pressed;
+}
+
+/* ==================== FOOTER ==================== */
+
+.shell-footer {
+    -fx-padding: 14 4 6 4;
+    -fx-spacing: 8;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 0 0 1 0;
+}
+
+.shell-footer-links {
+    -fx-alignment: center-left;
+    -fx-spacing: 12;
+}
+
+.shell-footer-link {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ds-text-muted;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+    -fx-underline: false;
+    -fx-font-weight: 500;
+}
+
+.shell-footer-link:hover {
+    -fx-text-fill: -ds-brand;
+    -fx-underline: true;
+}
+
+.shell-footer-divider {
+    -fx-text-fill: -ds-border;
+    -fx-font-size: 12px;
+}
+
+.shell-footer-version {
+    -fx-text-fill: -ds-text-muted;
+    -fx-font-size: 11px;
+    -fx-letter-spacing: 0.3;
+}

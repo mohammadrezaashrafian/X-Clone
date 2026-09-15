@@ -1,0 +1,278 @@
+/*
+ * Navigation
+ * Application shell chrome: sidebar, navigation items, profile card, theme
+ * switcher, search field, back button and footer.
+ *
+ * This file is the single owner of these classes (previously duplicated in
+ * layout.css and components.css).
+ */
+
+/* ==================== SIDEBAR ==================== */
+
+.sidebar {
+    -fx-background-color: -ds-surface;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 16 12 16 12;
+    -fx-spacing: 6;
+}
+
+.sidebar-right {
+    -fx-background-color: -ds-surface;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 0 0 0 1;
+    -fx-padding: 16 14 16 14;
+}
+
+/* ==================== BRAND ==================== */
+
+.sidebar-brand-row {
+    -fx-alignment: center-left;
+    -fx-spacing: 10;
+    -fx-padding: 6 8 10 8;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 0 0 1 0;
+}
+
+.sidebar-brand {
+    -fx-alignment: center-left;
+    -fx-spacing: 10;
+}
+
+.sidebar-brand-name {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+    -fx-letter-spacing: 0.3;
+}
+
+.sidebar-brand-logo {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 4, 0, 0, 2);
+}
+
+/* ==================== NAVIGATION ITEMS ==================== */
+
+.nav-menu {
+    -fx-spacing: 3;
+}
+
+.nav-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ds-text-primary;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-alignment: center-left;
+    -fx-cursor: hand;
+    -fx-padding: 11 14 11 14;
+    -fx-background-radius: 10;
+    -fx-max-width: infinity;
+    -fx-min-height: 44;
+    -fx-graphic-text-gap: 12;
+}
+
+.nav-item:hover {
+    -fx-background-color: -ds-surface-hover;
+    -fx-transition-duration: 120ms;
+}
+
+.nav-item:pressed {
+    -fx-background-color: -ds-surface-active;
+}
+
+.nav-item:focused {
+    -fx-background-color: -ds-surface-hover;
+}
+
+.nav-item-icon {
+    -fx-font-size: 17px;
+    -fx-text-fill: -ds-text-secondary;
+}
+
+.nav-item-label {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+}
+
+/* Active route */
+.nav-item-active {
+    -fx-background-color: -ds-brand-subtle;
+    -fx-text-fill: -ds-brand;
+    -fx-font-weight: bold;
+}
+
+.nav-item-active .nav-item-icon {
+    -fx-text-fill: -ds-brand;
+}
+
+.nav-item-active .nav-item-label {
+    -fx-text-fill: -ds-brand;
+}
+
+.nav-item-row {
+    -fx-alignment: center-left;
+    -fx-spacing: 8;
+    -fx-max-width: infinity;
+}
+
+.nav-badge {
+    -fx-translate-x: -6;
+}
+
+/* ==================== LEGACY NAV BUTTON ==================== */
+
+/* Kept so any remaining `sidebar-button` usage keeps working. */
+.sidebar-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ds-text-primary;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-alignment: center-left;
+    -fx-cursor: hand;
+    -fx-background-radius: 12;
+    -fx-padding: 12 14 12 14;
+    -fx-max-width: infinity;
+}
+
+.sidebar-button:hover {
+    -fx-background-color: -ds-surface-hover;
+}
+
+.sidebar-button-active {
+    -fx-background-color: -ds-brand-subtle;
+    -fx-text-fill: -ds-brand;
+    -fx-background-radius: 12;
+}
+
+/* ==================== BACK BUTTON ==================== */
+
+.back-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ds-text-primary;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 6 10;
+    -fx-background-radius: 8;
+}
+
+.back-button:hover {
+    -fx-background-color: -ds-surface-hover;
+}
+
+.back-button:disabled {
+    -fx-text-fill: -ds-text-muted;
+    -fx-opacity: 0.4;
+    -fx-cursor: default;
+}
+
+/* ==================== THEME SWITCHER ==================== */
+
+.theme-switcher {
+    -fx-background-color: -ds-surface-muted;
+    -fx-background-radius: 999;
+    -fx-padding: 3;
+    -fx-spacing: 3;
+    -fx-alignment: center;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+}
+
+.theme-segment {
+    -fx-background-color: -ds-surface;
+    -fx-text-fill: -ds-text-secondary;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+    -fx-padding: 6 18 6 18;
+    -fx-background-radius: 999;
+    -fx-min-width: 56;
+    -fx-alignment: center;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+}
+
+.theme-segment:hover {
+    -fx-background-color: -ds-surface-hover;
+    -fx-text-fill: -ds-text-primary;
+}
+
+.theme-segment-active {
+    -fx-background-color: -ds-brand-subtle;
+    -fx-text-fill: -ds-brand;
+    -fx-font-weight: bold;
+}
+
+/* ==================== PROFILE CARD (SIDEBAR USER) ==================== */
+
+.sidebar-user-section {
+    -fx-background-color: transparent;
+    -fx-border-color: -ds-border-light;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 12 8 8 8;
+    -fx-spacing: 10;
+    -fx-alignment: center-left;
+    -fx-cursor: hand;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 4, 0, 0, 2);
+}
+
+.sidebar-user-section:hover {
+    -fx-background-color: -ds-surface-hover;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 8, 0, 0, 3);
+}
+
+.sidebar-user-avatar {
+    -fx-background-radius: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 4, 0, 0, 2);
+}
+
+.sidebar-user-name {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ds-text-primary;
+    -fx-cursor: hand;
+}
+
+.sidebar-user-handle {
+    -fx-font-size: 12px;
+    -fx-text-fill: -ds-text-secondary;
+    -fx-cursor: hand;
+}
+
+.sidebar-user-action {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ds-text-muted;
+    -fx-font-size: 15px;
+    -fx-cursor: hand;
+    -fx-padding: 4 6 4 6;
+    -fx-background-radius: 8;
+    -fx-min-width: 28;
+    -fx-min-height: 28;
+    -fx-alignment: center;
+}
+
+.sidebar-user-action:hover {
+    -fx-background-color: -ds-surface-active;
+    -fx-text-fill: -ds-text-primary;
+}
+
+/* ==================== SEARCH ==================== */
+
+.search-field {
+    -fx-background-color: -ds-surface-muted;
+    -fx-background-radius: 20;
+    -fx-padding: 10 15 10 15;
+    -fx-prompt-text-fill: -ds-text-muted;
+    -fx-text-fill: -ds-text-primary;
+    -fx-font-size: 14px;
+}
+
+.search-field:focused {
+    -fx-background-color: -ds-surface;
+    -fx-border-color: -ds-brand;
+    -fx-border-radius: 20;
+    -fx-border-width: 1;
+}
+
+

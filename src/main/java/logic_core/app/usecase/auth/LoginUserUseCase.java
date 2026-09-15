@@ -51,30 +51,39 @@ public class LoginUserUseCase
             return Result.failure(e.getMessage());
         }
 
-        // Per-username attempt bound (online password guessing). The limiter
-        // is fail-open (Issue #20 contract) and never a correctness
-        // dependency; blocked attempts do not extend the fixed window. The
-        // username is normalized (trim + lowercase) so the limit cannot be
-        // bypassed by case/whitespace variants.
+        // The identifier is trimmed+lowercased for the rate-limit key so the
+        // limit cannot be bypassed by case/whitespace variants. The limiter is
+        // fail-open (Issue #20 contract) and never a correctness dependency;
+        // blocked attempts do not extend the fixed window.
+        String identifier = request.username().trim();
         if (!rateLimiter.tryAcquire(
                 RATE_LIMIT_OPERATION,
-                request.username().trim().toLowerCase(Locale.ROOT),
+                identifier.toLowerCase(Locale.ROOT),
                 rateLimits.loginMax(),
                 rateLimits.loginWindow()))
         {
-            log.warn("login rate limit exceeded for username=[masked]");
+            log.warn("login rate limit exceeded for identifier=[masked]");
             return Result.failure(GENERIC_FAILURE);
         }
 
+        // The login field accepts "Username or email": inputs containing '@'
+        // are treated as email addresses. Both lookups use the same
+        // pessimistic-lock/no-rollback handling; an unknown identifier is
+        // indistinguishable from a wrong password (Issue #21).
         SessionUserContext context;
         try
         {
-            context = lockOrchestrator.lockAndGetUserByUsername(request.username());
+            if (identifier.contains("@"))
+            {
+                context = lockOrchestrator.lockAndGetUserByEmail(identifier);
+            }
+            else
+            {
+                context = lockOrchestrator.lockAndGetUserByUsername(identifier);
+            }
         }
         catch (NotFoundException e)
         {
-            // Anti-enumeration: an unknown username is indistinguishable
-            // from a wrong password. (Issue #21)
             return Result.failure(GENERIC_FAILURE);
         }
 

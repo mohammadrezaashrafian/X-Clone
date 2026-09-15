@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.VBox?>
+
+<!--
+  Reusable utility-panel footer.
+  External links are opened through the controller (Desktop API), never
+  hardcoded as FXML actions.
+-->
+<VBox alignment="CENTER_LEFT"
+      styleClass="shell-footer"
+      xmlns="http://javafx.com/javafx/26"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Client.controllers.FooterController">
+    <children>
+
+        <FlowPane hgap="10.0" vgap="4.0" styleClass="shell-footer-links">
+            <children>
+
+                <Hyperlink fx:id="termsLink"
+                           styleClass="shell-footer-link"
+                           text="Terms of Service"/>
+
+                <Hyperlink fx:id="privacyLink"
+                           styleClass="shell-footer-link"
+                           text="Privacy Policy"/>
+
+                <Hyperlink fx:id="cookiesLink"
+                           styleClass="shell-footer-link"
+                           text="Cookie Policy"/>
+
+                <Hyperlink fx:id="accessibilityLink"
+                           styleClass="shell-footer-link"
+                           text="Accessibility"/>
+
+            </children>
+        </FlowPane>
+
+        <Label styleClass="shell-footer-version" text="Version 2.1.0"/>
+
+    </children>
+</VBox>

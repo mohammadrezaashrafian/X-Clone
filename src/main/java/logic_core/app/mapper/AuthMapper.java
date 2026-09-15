@@ -19,6 +19,7 @@ public final class AuthMapper
                 .expiresAt(session.getExpiresAt())
                 .message("User logged in successfully.")
                 .sessionId(session.getId())
+                .emailVerified(user.isEmailVerified())
                 .build();
     }
 }

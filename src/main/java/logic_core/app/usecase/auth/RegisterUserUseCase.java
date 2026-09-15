@@ -4,6 +4,10 @@ import logic_core.app.dto.request.RegisterRequest;
 import logic_core.app.dto.response.AuthResponse;
 import logic_core.app.dto.validator.RegisterValidator;
 import logic_core.app.mapper.AuthMapper;
+import logic_core.app.service.email.EmailMessage;
+import logic_core.app.service.email.EmailMessageType;
+import logic_core.app.service.email.EmailNotificationService;
+import logic_core.app.service.passwordReset.PasswordResetOtpService;
 import logic_core.common.exception.ConflictException;
 import logic_core.common.exception.ForbiddenException;
 import logic_core.common.exception.NotFoundException;
@@ -18,19 +22,27 @@ import logic_core.domain.repository.UserRepository;
 import logic_core.session.SessionManager;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class RegisterUserUseCase
 {
+    private static final Logger log = LoggerFactory.getLogger(RegisterUserUseCase.class);
+
     @NonNull private final RegisterValidator validator;
     @NonNull private final RegistrationPolicy policy;
     @NonNull private final UserRepository userRepository;
     @NonNull private final PasswordHasher passwordHasher;
     @NonNull private final TimeProvider timeProvider;
     @NonNull private final SessionManager sessionManager;
+    @NonNull private final PasswordResetOtpService otpService;
+    @NonNull private final EmailNotificationService emailService;
 
     @Transactional
     public Result<AuthResponse> execute(RegisterRequest request)
@@ -59,6 +71,28 @@ public class RegisterUserUseCase
 
             SessionModel session = sessionManager.startSession(persistedUser.getId());
 
+            // Generate email verification OTP and send asynchronously after commit.
+            try
+            {
+                String rawOtp = otpService.issue(request.email().trim().toLowerCase(), persistedUser.getId());
+                emailService.sendAfterCommit(new EmailMessage(
+                        request.email().trim(),
+                        EmailMessageType.EMAIL_VERIFICATION,
+                        Map.of(
+                                "code", rawOtp,
+                                "email", request.email().trim(),
+                                "appName", "X-Clone",
+                                "expiresInMinutes", String.valueOf(
+                                        PasswordResetOtpService.DEFAULT_TTL.toMinutes())
+                        )
+                ));
+            }
+            catch (Exception e)
+            {
+                // Email delivery failure must not block registration.
+                log.warn("Failed to send verification email after registration for user={}: {}",
+                        persistedUser.getUsername(), e.getMessage());
+            }
 
             return Result.success(AuthMapper.toResponse(persistedUser, session));
         }

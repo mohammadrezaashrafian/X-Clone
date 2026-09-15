@@ -31,6 +31,10 @@ public interface UserJpaRepository extends JpaRepository<UserEntity, UUID> {
     @Query("SELECT u FROM UserEntity u WHERE u.username = :username AND u.isDeleted = false")
     Optional<UserEntity> findWithLockByUsernameAndIsDeletedFalse(@Param("username") String username);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT u FROM UserEntity u WHERE u.email = :email AND u.isDeleted = false")
+    Optional<UserEntity> findWithLockByEmailAndIsDeletedFalse(@Param("email") String email);
+
     @Query("SELECT s.user FROM SessionEntity s WHERE s.id = :sessionId AND s.user.isDeleted = false")
     Optional<UserEntity> findUserBySessionId(@Param("sessionId") UUID sessionId);
 

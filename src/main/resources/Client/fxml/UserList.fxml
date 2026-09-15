@@ -4,23 +4,23 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="450.0" style="-fx-background-color: #ffffff;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.UserListController">
+<?import java.lang.String?>
+<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="450.0" styleClass="page-surface-white" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.UserListController">
     <children>
-        <HBox alignment="CENTER_LEFT" style="-fx-border-color: #eff3f4; -fx-border-width: 0 0 1 0; -fx-padding: 15 20 15 20;">
+        <HBox alignment="CENTER_LEFT" styleClass="section-title">
             <children>
-                <Label fx:id="pageTitleLabel" text="Followers" textFill="#0f1419">
-                    <font>
-                        <Font name="System Bold" size="20.0" />
-                    </font>
-                </Label>
+                <Label fx:id="pageTitleLabel" text="Followers" styleClass="text-heading" />
             </children>
         </HBox>
 
-        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: #ffffff; -fx-hbar-policy: NEVER;" VBox.vgrow="ALWAYS">
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+            <styleClass>
+                <String fx:value="scroll-pane-transparent" />
+                <String fx:value="scroll-pane-no-hbar" />
+            </styleClass>
             <content>
-                <VBox fx:id="usersContainer" spacing="10.0" style="-fx-padding: 15;" />
+                <VBox fx:id="usersContainer" spacing="10.0" styleClass="padded" />
             </content>
         </ScrollPane>
     </children>
