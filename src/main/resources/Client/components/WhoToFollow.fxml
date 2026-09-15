@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- "Who to follow" card for the left sidebar. -->
+<?import javafx.scene.control.Label?>
+<VBox fx:id="cardRoot"
+      maxWidth="1.7976931348623157E308"
+      styleClass="widget-card"
+      xmlns="http://javafx.com/javafx/26"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Client.controllers.WhoToFollowController">
+    <children>
+        <HBox alignment="CENTER_LEFT" spacing="8.0" styleClass="widget-header">
+            <children>
+                <Label styleClass="widget-title" text="Who to follow"/>
+                <HBox fx:id="widgetDots" alignment="CENTER" styleClass="widget-dots">
+                    <children/>
+                </HBox>
+            </children>
+        </HBox>
+    </children>
+</VBox>

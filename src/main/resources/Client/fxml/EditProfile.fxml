@@ -9,75 +9,67 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.control.Separator?>
 
-<VBox prefWidth="480.0" spacing="15.0" style="-fx-background-color: #ffffff; -fx-background-radius: 15;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.EditProfileController">
+<?import java.lang.String?>
+<HBox prefWidth="480.0" prefHeight="560.0" alignment="CENTER" styleClass="edit-profile-stage-wrapper" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.EditProfileController">
     <children>
-
-        <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-border-color: #eff3f4; -fx-border-width: 0 0 1 0; -fx-padding: 15 20 15 20;">
+        <VBox prefWidth="468.0" styleClass="edit-profile-clip">
             <children>
-                <Label text="Edit Profile" HBox.hgrow="ALWAYS">
-                    <font>
-                        <Font name="System Bold" size="18.0" />
-                    </font>
-                </Label>
-                <Pane HBox.hgrow="ALWAYS" />
-                <Button fx:id="closeButton" onAction="#handleCancel" style="-fx-background-color: transparent; -fx-text-fill: #536471; -fx-font-weight: bold; -fx-cursor: hand;" text="✕" />
+
+                <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="section-title">
+                    <children>
+                        <Label text="Edit Profile" styleClass="text-heading" />
+                        <Pane HBox.hgrow="ALWAYS" />
+                        <Button fx:id="closeButton" onAction="#handleCancel" styleClass="btn-ghost btn-icon" text="✕" />
+                    </children>
+                </HBox>
+
+                <Separator styleClass="section-divider" />
+
+                <VBox spacing="15.0" styleClass="edit-profile-content">
+                    <children>
+
+                <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="edit-profile-avatar-row">
+                    <children>
+                        <ImageView fx:id="avatarPreview" fitHeight="70.0" fitWidth="70.0" pickOnBounds="true" preserveRatio="true" styleClass="edit-profile-avatar" />
+                        <Button fx:id="changeAvatarButton" onAction="#handleChangeAvatar" styleClass="btn-outline" text="Change Photo" />
+                    </children>
+                </HBox>
+
+                <VBox spacing="5.0" styleClass="form-group">
+                    <children>
+                        <Label text="Display Name" styleClass="field-label" />
+                        <TextField fx:id="displayNameField" promptText="Enter your name" styleClass="field-input" />
+                    </children>
+                </VBox>
+
+                <VBox spacing="5.0" styleClass="form-group">
+                    <children>
+                        <Label text="Username" styleClass="field-label" />
+                        <TextField fx:id="usernameField" promptText="Enter username" styleClass="field-input" />
+                    </children>
+                </VBox>
+
+                <VBox spacing="5.0" styleClass="form-group">
+                    <children>
+                        <Label text="Bio" styleClass="field-label" />
+                        <TextArea fx:id="bioTextArea" prefRowCount="3" promptText="Describe yourself..." styleClass="field-input" wrapText="true" />
+                    </children>
+                </VBox>
+
+                <HBox alignment="CENTER_RIGHT" spacing="10.0" styleClass="form-action-row">
+                    <children>
+                        <Button fx:id="cancelButton" onAction="#handleCancel" text="Cancel" styleClass="btn-ghost btn-secondary" />
+                        <Button fx:id="saveButton" onAction="#handleSave" styleClass="btn-primary" text="Save" />
+                    </children>
+                </HBox>
+
             </children>
-        </HBox>
-
-        <VBox spacing="15.0" style="-fx-padding: 0 20 20 20;">
-            <children>
-
-                <HBox alignment="CENTER_LEFT" spacing="15.0">
-                    <children>
-                        <ImageView fx:id="avatarPreview" fitHeight="70.0" fitWidth="70.0" pickOnBounds="true" preserveRatio="true" style="-fx-background-radius: 35; -fx-border-color: #eff3f4; -fx-border-width: 2; -fx-border-radius: 35;" />
-                        <Button fx:id="changeAvatarButton" onAction="#handleChangeAvatar" style="-fx-background-color: #eff3f4; -fx-text-fill: #0f1419; -fx-background-radius: 20; -fx-font-weight: bold; -fx-padding: 8 15 8 15; -fx-cursor: hand;" text="Change Photo" />
-                    </children>
-                </HBox>
-
-                <VBox spacing="5.0">
-                    <children>
-                        <Label text="Display Name" textFill="#536471">
-                            <font>
-                                <Font name="System Bold" size="12.0" />
-                            </font>
-                        </Label>
-                        <TextField fx:id="displayNameField" promptText="Enter your name" style="-fx-background-color: #ffffff; -fx-border-color: #cfd9de; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10;" />
-                    </children>
                 </VBox>
-
-                <VBox spacing="5.0">
-                    <children>
-                        <Label text="Username" textFill="#536471">
-                            <font>
-                                <Font name="System Bold" size="12.0" />
-                            </font>
-                        </Label>
-                        <TextField fx:id="usernameField" promptText="Enter username" style="-fx-background-color: #ffffff; -fx-border-color: #cfd9de; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10;" />
-                    </children>
-                </VBox>
-
-                <VBox spacing="5.0">
-                    <children>
-                        <Label text="Bio" textFill="#536471">
-                            <font>
-                                <Font name="System Bold" size="12.0" />
-                            </font>
-                        </Label>
-                        <TextArea fx:id="bioTextArea" prefRowCount="3" promptText="Describe yourself..." style="-fx-background-color: #ffffff; -fx-border-color: #cfd9de; -fx-border-radius: 8; -fx-background-radius: 8;" wrapText="true" />
-                    </children>
-                </VBox>
-
-                <HBox alignment="CENTER_RIGHT" spacing="10.0" style="-fx-padding: 10 0 0 0;">
-                    <children>
-                        <Button fx:id="cancelButton" onAction="#handleCancel" style="-fx-background-color: #eff3f4; -fx-text-fill: #0f1419; -fx-background-radius: 20; -fx-font-weight: bold; -fx-padding: 8 20 8 20; -fx-cursor: hand;" text="Cancel" />
-                        <Button fx:id="saveButton" onAction="#handleSave" style="-fx-background-color: #1d9bf0; -fx-text-fill: #ffffff; -fx-background-radius: 20; -fx-font-weight: bold; -fx-padding: 8 25 8 25; -fx-cursor: hand;" text="Save" />
-                    </children>
-                </HBox>
 
             </children>
         </VBox>
 
     </children>
-</VBox>
+</HBox>

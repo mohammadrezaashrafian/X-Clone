@@ -42,7 +42,7 @@ public class ImageUploadDialogController {
 
     private void addImageToPreview(File file) {
         VBox card = new VBox(5);
-        card.setStyle("-fx-alignment: center; -fx-border-color: #cfd9de; -fx-border-radius: 8; -fx-padding: 5;");
+        card.getStyleClass().add("image-upload-card");
 
         ImageView imageView = new ImageView(new Image(file.toURI().toString()));
         imageView.setFitWidth(90);
@@ -50,7 +50,7 @@ public class ImageUploadDialogController {
         imageView.setPreserveRatio(true);
 
         Button removeBtn = new Button("❌");
-        removeBtn.setStyle("-fx-background-color: transparent; -fx-font-size: 10px; -fx-cursor: hand;");
+        removeBtn.getStyleClass().add("image-remove-btn");
         removeBtn.setOnAction(e -> {
             selectedFiles.remove(file);
             imagePreviewContainer.getChildren().remove(card);

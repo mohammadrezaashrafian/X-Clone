@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+
+<!--
+  Reusable "Compose New Post" card.
+  The card is an entry point only: it opens the existing timeline composer,
+  it does not implement compose logic itself.
+-->
+<VBox fx:id="composeCard"
+      maxWidth="1.7976931348623157E308"
+      styleClass="compose-card"
+      xmlns="http://javafx.com/javafx/26"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Client.controllers.ComposeCardController">
+    <children>
+
+        <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="compose-card-header">
+            <children>
+
+                <ImageView fx:id="composeAvatar"
+                           fitHeight="36.0"
+                           fitWidth="36.0"
+                           pickOnBounds="true"
+                           preserveRatio="true"
+                           styleClass="compose-card-avatar">
+                    <clip>
+                        <Circle centerX="18.0" centerY="18.0" radius="18.0"/>
+                    </clip>
+                </ImageView>
+
+                <Label maxWidth="1.7976931348623157E308"
+                       styleClass="compose-card-placeholder"
+                       text="Compose New Post"
+                       HBox.hgrow="ALWAYS"/>
+
+            </children>
+        </HBox>
+
+        <HBox alignment="CENTER_RIGHT" styleClass="compose-card-footer">
+            <children>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Button fx:id="composePostButton"
+                        mnemonicParsing="false"
+                        styleClass="btn-primary-sm"
+                        text="Post"/>
+
+            </children>
+        </HBox>
+
+    </children>
+</VBox>

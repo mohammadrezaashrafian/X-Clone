@@ -6,26 +6,20 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="450.0" style="-fx-background-color: #ffffff;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.MessagesController">
+<HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="450.0" styleClass="messages-shell" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.MessagesController">
     <children>
 
-        <VBox prefWidth="250.0" style="-fx-border-color: #eff3f4; -fx-border-width: 0 1 0 0;">
+        <VBox prefWidth="250.0" styleClass="conversation-list">
             <children>
-                <HBox style="-fx-padding: 15; -fx-border-color: #eff3f4; -fx-border-width: 0 0 1 0;">
+                <HBox styleClass="section-title">
                     <children>
-                        <Label text="Messages">
-                            <font>
-                                <Font name="System Bold" size="20.0" />
-                            </font>
-                        </Label>
+                        <Label text="Messages" />
                     </children>
                 </HBox>
-                <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: white;" VBox.vgrow="ALWAYS">
+                <ScrollPane fitToWidth="true" styleClass="conversation-list-scroll" VBox.vgrow="ALWAYS">
                     <content>
-                        <VBox fx:id="chatsContainer" spacing="5.0" style="-fx-padding: 10;">
-                        </VBox>
+                        <VBox fx:id="chatsContainer" spacing="5.0" styleClass="conversation-list-container" />
                     </content>
                 </ScrollPane>
             </children>
@@ -33,30 +27,25 @@
 
         <VBox HBox.hgrow="ALWAYS">
             <children>
-                <HBox style="-fx-padding: 15; -fx-border-color: #eff3f4; -fx-border-width: 0 0 1 0;">
+                <HBox styleClass="section-title">
                     <children>
-                        <Label fx:id="currentChatUserLabel" text="Select a chat" textFill="#0f1419">
-                            <font>
-                                <Font name="System Bold" size="16.0" />
-                            </font>
-                        </Label>
+                        <Label fx:id="currentChatUserLabel" text="Select a chat" />
                     </children>
                 </HBox>
 
-                <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: white;" VBox.vgrow="ALWAYS">
+                <ScrollPane fitToWidth="true" styleClass="chat-scroll" VBox.vgrow="ALWAYS">
                     <content>
-                        <VBox fx:id="messagesContainer" spacing="10.0" style="-fx-padding: 15;" />
+                        <VBox fx:id="messagesContainer" spacing="10.0" styleClass="chat-messages-container" />
                     </content>
                 </ScrollPane>
 
-                <HBox spacing="10.0" style="-fx-padding: 15; -fx-border-color: #eff3f4; -fx-border-width: 1 0 0 0;" alignment="CENTER">
+                <HBox spacing="10.0" styleClass="message-input-container" alignment="CENTER">
                     <children>
-                        <TextField fx:id="messageInputField" promptText="Start a new message" style="-fx-background-color: #eff3f4; -fx-background-radius: 20; -fx-padding: 10 15 10 15;" HBox.hgrow="ALWAYS" />
-                        <Button fx:id="sendMessageButton" onAction="#handleSendMessage" style="-fx-background-color: #1d9bf0; -fx-text-fill: white; -fx-background-radius: 20; -fx-font-weight: bold; -fx-padding: 8 15 8 15;" text="Send" />
+                        <TextField fx:id="messageInputField" promptText="Start a new message" styleClass="search-field" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="sendMessageButton" onAction="#handleSendMessage" styleClass="btn-primary" text="Send" />
                     </children>
                 </HBox>
             </children>
         </VBox>
-
     </children>
 </HBox>

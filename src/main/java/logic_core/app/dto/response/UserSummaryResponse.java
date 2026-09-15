@@ -11,5 +11,5 @@ public record UserSummaryResponse(
         String username,
         String displayName,
         String avatarUrl,
-        boolean verified
+        Boolean verified
 ) {}

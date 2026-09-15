@@ -9,31 +9,27 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="450.0" style="-fx-background-color: #f7f9fa;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.TimelineController">
+<?import java.lang.String?>
+<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="450.0" styleClass="page-surface" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.TimelineController">
     <children>
 
-        <HBox alignment="CENTER_LEFT" style="-fx-background-color: #ffffff; -fx-border-color: #eff3f4; -fx-border-width: 0 0 1 0; -fx-padding: 15 20 15 20;">
+        <HBox alignment="CENTER_LEFT" styleClass="section-title">
             <children>
-                <Label text="Home" textFill="#0f1419">
-                    <font>
-                        <Font name="System Bold" size="20.0" />
-                    </font>
-                </Label>
+                <Label text="Home" />
             </children>
         </HBox>
 
-        <VBox spacing="15.0" style="-fx-background-color: #ffffff; -fx-border-color: #eff3f4; -fx-border-width: 0 0 1 0; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 4);">
+        <VBox spacing="15.0" styleClass="tweet-composer">
             <children>
                 <HBox alignment="TOP_LEFT" spacing="15.0">
                     <children>
-                        <ImageView fx:id="currentUserAvatar" fitHeight="45.0" fitWidth="45.0" pickOnBounds="true" preserveRatio="true" style="-fx-background-radius: 22.5; -fx-border-color: #eff3f4; -fx-border-width: 1;" />
+                        <ImageView fx:id="currentUserAvatar" fitHeight="45.0" fitWidth="45.0" pickOnBounds="true" preserveRatio="true" styleClass="tweet-composer-avatar" />
                         <VBox spacing="10.0" HBox.hgrow="ALWAYS">
                             <children>
-                                <TextField fx:id="newTweetField" promptText="What's happening?!" style="-fx-background-color: transparent; -fx-text-fill: #0f1419; -fx-prompt-text-fill: #536471; -fx-font-size: 17px; -fx-padding: 8 0 8 0;" />
+                                <TextField fx:id="newTweetField" promptText="What's happening?!" styleClass="tweet-composer-input" />
 
-                                <ImageView fx:id="mediaPreview" fitHeight="150.0" fitWidth="250.0" preserveRatio="true" visible="false" managed="false" style="-fx-background-radius: 10;" />
+                                <ImageView fx:id="mediaPreview" fitHeight="150.0" fitWidth="250.0" preserveRatio="true" visible="false" managed="false" styleClass="tweet-composer-media" />
                             </children>
                         </VBox>
                     </children>
@@ -42,27 +38,27 @@
                 <HBox alignment="CENTER_LEFT" spacing="10.0">
                     <children>
 
-                        <Button fx:id="addMediaButton" onAction="#handleSelectMedia" style="-fx-background-color: transparent; -fx-text-fill: #1d9bf0; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand;" text="📷 Media" />
+                        <Button fx:id="addMediaButton" onAction="#handleSelectMedia" styleClass="link-text" text="📷 Media" />
 
-                        <Button fx:id="addPollButton" onAction="#handleCreatePoll" style="-fx-background-color: transparent; -fx-text-fill: #1d9bf0; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand;" text="📊 Poll" />
+                        <Button fx:id="addPollButton" onAction="#handleCreatePoll" styleClass="link-text" text="📊 Poll" />
 
                         <Pane HBox.hgrow="ALWAYS" />
 
-                        <Button fx:id="submitTweetButton" onAction="#handleSubmitTweet" style="-fx-background-color: #1d9bf0; -fx-text-fill: white; -fx-background-radius: 25; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 10 22 10 22; -fx-cursor: hand;" text="Post" />
+                        <Button fx:id="submitTweetButton" onAction="#handleSubmitTweet" styleClass="btn-primary-sm" text="Post" />
                     </children>
                 </HBox>
             </children>
         </VBox>
 
-        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: #f7f9fa; -fx-hbar-policy: NEVER;" VBox.vgrow="ALWAYS">
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+            <styleClass>
+                <String fx:value="scroll-pane-surface" />
+                <String fx:value="scroll-pane-no-hbar" />
+            </styleClass>
             <content>
-                <VBox fx:id="tweetsContainer" spacing="12.0" style="-fx-padding: 15;">
+                <VBox fx:id="tweetsContainer" spacing="12.0" styleClass="timeline-container">
                     <children>
-                        <Label text="No posts yet! Your timeline is empty." textFill="#536471">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                        </Label>
+                        <Label text="No posts yet! Your timeline is empty." styleClass="empty-state" />
                     </children>
                 </VBox>
             </content>

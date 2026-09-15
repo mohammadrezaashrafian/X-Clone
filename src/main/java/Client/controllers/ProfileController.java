@@ -1,6 +1,8 @@
 package Client.controllers;
 
+import Client.AvatarLoader;
 import Client.ClientApplicationContext;
+import Client.navigation.NavigationRoute;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -10,7 +12,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
@@ -20,13 +21,11 @@ import logic_core.app.dto.response.ProfileInfoResponse;
 import logic_core.app.dto.timeline.TimelineTweet;
 import logic_core.domain.repository.TimelineType;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-public class ProfileController {
+public class ProfileController implements MainLayoutController.LiveAvatarAware {
 
     private static final Logger log = Logger.getLogger(ProfileController.class.getName());
 
@@ -59,8 +58,6 @@ public class ProfileController {
 
     private final ClientApplicationContext context;
     private UUID profileUserId;
-
-    private static final String DEFAULT_AVATAR_RESOURCE = "/Client/images/user (1).png";
 
     public ProfileController(ClientApplicationContext context) {
         this.context = context;
@@ -113,48 +110,7 @@ public class ProfileController {
         String avatarUrl = profile.avatarUrl();
         log.info("Loading Avatar for profile. avatarUrl = " + avatarUrl);
 
-        if (avatarUrl != null && !avatarUrl.isBlank()) {
-            try {
-                String cleanPath = avatarUrl.startsWith("/") || avatarUrl.startsWith("\\")
-                        ? avatarUrl.substring(1)
-                        : avatarUrl;
-
-                File avatarFile = new File("data", cleanPath);
-
-                if (!avatarFile.exists()) {
-                    String userDir = System.getProperty("user.dir");
-                    avatarFile = new File(userDir + File.separator + "data", cleanPath);
-                }
-
-                log.info("Resolved Avatar Absolute Path: " + avatarFile.getAbsolutePath() + " | Exists: " + avatarFile.exists());
-
-                if (avatarFile.exists()) {
-                    Image image = new Image(avatarFile.toURI().toString(), true);
-                    profileAvatar.setImage(image);
-                    return;
-                } else {
-                    log.warning("Avatar file NOT found on disk: " + avatarFile.getAbsolutePath());
-                }
-            } catch (Exception e) {
-                log.warning("Failed to load user avatar: " + e.getMessage());
-            }
-        }
-        setDefaultAvatar();
-    }
-
-    private void setDefaultAvatar() {
-        try {
-            URL resource = getClass().getResource(DEFAULT_AVATAR_RESOURCE);
-            if (resource != null) {
-                profileAvatar.setImage(new Image(resource.toExternalForm(), true));
-            } else {
-                profileAvatar.setImage(null);
-                log.warning("Default avatar resource not found at: " + DEFAULT_AVATAR_RESOURCE);
-            }
-        } catch (Exception e) {
-            profileAvatar.setImage(null);
-            log.warning("Failed to load default avatar: " + e.getMessage());
-        }
+        AvatarLoader.loadAvatar(profileAvatar, avatarUrl);
     }
 
     private void loadUserTweets() {
@@ -210,6 +166,12 @@ public class ProfileController {
 
             Node card = loader.load();
             TweetItemController controller = loader.getController();
+
+            // Let the shell reach this card later, for in-place avatar updates.
+            card.getProperties().put(TweetItemController.NODE_KEY, controller);
+
+            controller.preloadAvatar(tweet.avatarUrl());
+
             controller.setTweet(tweet);
 
             controller.setOnDeleteSuccess(() -> {
@@ -222,6 +184,29 @@ public class ProfileController {
             userTweetsContainer.getChildren().add(card);
         } catch (IOException e) {
             log.severe("Tweet card error : " + e.getMessage());
+        }
+    }
+
+    /**
+     * Pushes a changed current-user avatar into the tweet cards already on this
+     * profile, so they update without reloading the page.
+     */
+    @Override
+    public void applyCurrentUserAvatar(String avatarUrl)
+    {
+        if (avatarUrl == null || avatarUrl.isBlank() || userTweetsContainer == null)
+        {
+            return;
+        }
+
+        for (Node node : userTweetsContainer.getChildren())
+        {
+            Object card = node.getProperties().get(TweetItemController.NODE_KEY);
+
+            if (card instanceof TweetItemController tweetItem)
+            {
+                tweetItem.applyCurrentUserAvatar(avatarUrl);
+            }
         }
     }
 
@@ -246,7 +231,9 @@ public class ProfileController {
             dialog.setTitle("Edit Profile");
             dialog.initOwner((Stage) editProfileButton.getScene().getWindow());
             dialog.initModality(Modality.APPLICATION_MODAL);
-            dialog.setScene(new Scene(root));
+            Scene dialogScene = new Scene(root);
+            context.getThemeManager().attach(dialogScene);
+            dialog.setScene(dialogScene);
             dialog.setResizable(false);
             dialog.showAndWait();
 
@@ -257,15 +244,29 @@ public class ProfileController {
     }
 
     @FXML
-    private void handleShowFollowers() {}
+    private void handleShowFollowers()
+    {
+        navigateTo(NavigationRoute.FOLLOWERS);
+    }
 
     @FXML
-    private void handleShowFollowing() {}
+    private void handleShowFollowing()
+    {
+        navigateTo(NavigationRoute.FOLLOWING);
+    }
+
+    private void navigateTo(NavigationRoute route)
+    {
+        if (context.navigation() != null)
+        {
+            context.navigation().navigate(route);
+        }
+    }
 
     private void showEmptyState(String text) {
         userTweetsContainer.getChildren().clear();
         Label label = new Label(text);
-        label.setStyle("-fx-text-fill:#666666;" + "-fx-padding:16px;");
+        label.getStyleClass().add("empty-state");
         userTweetsContainer.getChildren().add(label);
     }
 

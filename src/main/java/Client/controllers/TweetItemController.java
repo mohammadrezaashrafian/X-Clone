@@ -1,6 +1,10 @@
 package Client.controllers;
 
+import Client.AvatarLoader;
 import Client.ClientApplicationContext;
+import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
+import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -8,16 +12,14 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import logic_core.app.dto.response.LikeResponse;
 import logic_core.app.dto.timeline.TimelineTweet;
 
-import java.io.File;
-import java.net.URL;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -29,8 +31,12 @@ public class TweetItemController {
 
     private static final Logger log = Logger.getLogger(TweetItemController.class.getName());
 
+    /** Entry-state style class, see components/animations.css. */
+    private static final String ANIM_SLIDE_UP_CLASS = "anim-slide-up";
+
     @FXML public VBox pollContainer;
     @FXML public ImageView mediaImageView;
+    @FXML private VBox tweetRoot;
     @FXML private ImageView avatarImageView;
     @FXML private Label displayNameLabel;
     @FXML private Label usernameLabel;
@@ -39,16 +45,16 @@ public class TweetItemController {
     @FXML private Button commentButton;
     @FXML private Button retweetButton;
     @FXML private Button likeButton;
+    @FXML private Button bookmarkButton;
     @FXML private Button deleteButton;
 
     private final ClientApplicationContext context;
     private long currentLikeCount;
     private boolean liked;
+    private boolean bookmarked;
     private TimelineTweet tweet;
 
     private Runnable onDeleteSuccess;
-
-    private static final String DEFAULT_AVATAR_RESOURCE = "/Client/images/user (1).png";
 
     public TweetItemController(ClientApplicationContext context) {
         this.context = context;
@@ -66,8 +72,56 @@ public class TweetItemController {
         retweetButton.setOnAction(e -> handleRetweet());
         commentButton.setOnAction(e -> handleReply());
 
+        if (bookmarkButton != null) {
+            bookmarkButton.setOnAction(e -> handleBookmark());
+        }
+
         if (deleteButton != null) {
             deleteButton.setOnAction(e -> handleDelete());
+        }
+
+        playEntryAnimation();
+    }
+
+    /**
+     * Fade/slide entry for a freshly added card. The starting state comes from
+     * the `anim-slide-up` style class in components/animations.css.
+     */
+    private void playEntryAnimation() {
+        if (tweetRoot == null) {
+            return;
+        }
+
+        FadeTransition fade = new FadeTransition(Duration.millis(220), tweetRoot);
+        fade.setFromValue(0);
+        fade.setToValue(1);
+
+        TranslateTransition slide = new TranslateTransition(Duration.millis(220), tweetRoot);
+        slide.setFromY(16);
+        slide.setToY(0);
+
+        ParallelTransition entry = new ParallelTransition(fade, slide);
+
+        // `anim-slide-up` pins -fx-opacity and -fx-translate-y as the animation start
+        // state. JavaFX re-applies CSS-declared styleable properties on every CSS pass,
+        // so leaving the class on the node undoes the entry animation the next time any
+        // re-styling happens for another reason (e.g. :hover, theme toggle). Remove it
+        // immediately so the rendered card stays visible for the rest of its lifetime.
+        entry.setOnFinished(event -> tweetRoot.getStyleClass().remove(ANIM_SLIDE_UP_CLASS));
+
+        entry.play();
+    }
+
+    /**
+     * Pre-loads the avatar so the card is never shown empty on first hover.
+     * Kept in sync with the existing setAvatar() path.
+     */
+    public void preloadAvatar(String avatarUrl) {
+        if (avatarUrl != null && !avatarUrl.isBlank()) {
+            AvatarLoader.loadAvatar(avatarImageView, avatarUrl);
+        }
+        else {
+            AvatarLoader.loadDefaultAvatar(avatarImageView);
         }
     }
 
@@ -92,6 +146,7 @@ public class TweetItemController {
         checkDeletePermission();
 
         loadLikeState();
+        loadBookmarkState();
     }
 
 
@@ -125,6 +180,83 @@ public class TweetItemController {
                 });
     }
 
+    private void loadBookmarkState() {
+        if (bookmarkButton == null || tweet == null) {
+            return;
+        }
+
+        bookmarkButton.setDisable(true);
+
+        context.getBookmarkClientService()
+                .isBookmarked(tweet.tweetId())
+                .thenAccept(result -> Platform.runLater(() -> {
+
+                    bookmarkButton.setDisable(false);
+
+                    if (result == null || result.isFailure() || result.getData() == null) {
+                        return;
+                    }
+
+                    bookmarked = result.getData().bookmarked();
+                    updateBookmarkButton();
+                }))
+                .exceptionally(error -> {
+                    Platform.runLater(() -> bookmarkButton.setDisable(false));
+                    return null;
+                });
+    }
+
+    /**
+     * Toggles the bookmark optimistically, exactly like the like action, and
+     * rolls back when the backend rejects the change.
+     */
+    private void handleBookmark() {
+        if (tweet == null) {
+            return;
+        }
+
+        bookmarkButton.setDisable(true);
+
+        boolean oldState = bookmarked;
+        bookmarked = !bookmarked;
+        updateBookmarkButton();
+
+        var future = bookmarked
+                ? context.getBookmarkClientService().bookmark(tweet.tweetId())
+                : context.getBookmarkClientService().unbookmark(tweet.tweetId());
+
+        future.thenAccept(result -> Platform.runLater(() -> {
+
+            bookmarkButton.setDisable(false);
+
+            if (result == null || result.isFailure()) {
+                bookmarked = oldState;
+                updateBookmarkButton();
+            }
+        }))
+        .exceptionally(error -> {
+            Platform.runLater(() -> {
+                bookmarkButton.setDisable(false);
+                bookmarked = oldState;
+                updateBookmarkButton();
+            });
+
+            return null;
+        });
+    }
+
+    private void updateBookmarkButton() {
+        if (bookmarkButton == null) {
+            return;
+        }
+
+        bookmarkButton.getStyleClass().remove("tweet-action-btn-active");
+
+        if (bookmarked) {
+            bookmarkButton.getStyleClass().add("tweet-action-btn-active");
+        }
+    }
+
     private void checkDeletePermission() {
         if (deleteButton == null || tweet == null) return;
 
@@ -148,44 +280,47 @@ public class TweetItemController {
             deleteButton.setManaged(false);
         }
 
+        if (bookmarkButton != null) {
+            bookmarkButton.setDisable(false);
+        }
+
         liked = false;
+        bookmarked = false;
         currentLikeCount = 0;
         updateLikeButton();
-        setDefaultAvatar();
+        updateBookmarkButton();
+        AvatarLoader.loadDefaultAvatar(avatarImageView);
+    }
+
+    /**
+     * Node property key under which a card node stores its controller, so a view
+     * can refresh the cards it already rendered without rebuilding its list.
+     */
+    public static final String NODE_KEY = "tweetItemController";
+
+    /**
+     * Re-applies the live current-user avatar to this card.
+     *
+     * Only cards authored by the signed-in user are touched; every other card
+     * keeps the avatar that arrived with its tweet. This is how an avatar change
+     * reaches cards that were rendered before the change, without a reload.
+     */
+    public void applyCurrentUserAvatar(String avatarUrl) {
+        if (tweet == null || avatarUrl == null || avatarUrl.isBlank()) {
+            return;
+        }
+
+        UUID currentUserId = context.session().getCurrentUserId();
+
+        if (currentUserId == null || !currentUserId.equals(tweet.authorId())) {
+            return;
+        }
+
+        setAvatar(avatarUrl);
     }
 
     private void setAvatar(String avatarUrl) {
-        if (avatarUrl != null && !avatarUrl.isBlank()) {
-            try {
-                String cleanPath = avatarUrl.startsWith("/") || avatarUrl.startsWith("\\")
-                        ? avatarUrl.substring(1)
-                        : avatarUrl;
-
-                File avatarFile = new File("data", cleanPath);
-                if (!avatarFile.exists()) {
-                    String userDir = System.getProperty("user.dir");
-                    avatarFile = new File(userDir + File.separator + "data", cleanPath);
-                }
-
-                if (avatarFile.exists()) {
-                    avatarImageView.setImage(new Image(avatarFile.toURI().toString(), true));
-                    return;
-                }
-            } catch (Exception e) {
-                log.warning("Failed to load tweet avatar: " + e.getMessage());
-            }
-        }
-        setDefaultAvatar();
-    }
-
-    private void setDefaultAvatar() {
-        try {
-            URL resource = getClass().getResource(DEFAULT_AVATAR_RESOURCE);
-            if (resource != null) {
-                avatarImageView.setImage(new Image(resource.toExternalForm(), true));
-            }
-        } catch (Exception ignored) {
-        }
+        AvatarLoader.loadAvatar(avatarImageView, avatarUrl);
     }
 
     private String nullSafe(String value) {
@@ -328,7 +463,9 @@ public class TweetItemController {
             Stage stage = new Stage();
             stage.setTitle("Reply");
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setScene(new Scene(root));
+            Scene dialogScene = new Scene(root);
+            context.getThemeManager().attach(dialogScene);
+            stage.setScene(dialogScene);
             stage.showAndWait();
 
         } catch (Exception e) {

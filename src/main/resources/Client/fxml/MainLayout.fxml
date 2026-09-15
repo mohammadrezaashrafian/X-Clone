@@ -1,48 +1,156 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1100.0" style="-fx-background-color: #ffffff;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Client.controllers.MainLayoutController">
+<!--
+  Application shell.
+
+  Three columns:
+    1. navigation sidebar  (brand, nav items, compose card, theme switch, user card)
+    2. content area        (route views mounted by MainLayoutController)
+    3. utility panel       (brand, search, animated widget, footer)
+
+  Everything column-specific is a reusable component in Client/components/;
+  this file only composes them.
+-->
+<?import java.lang.String?>
+<HBox maxHeight="1.7976931348623157E308"
+      maxWidth="1.7976931348623157E308"
+      minHeight="600.0"
+      minWidth="900.0"
+      prefHeight="700.0"
+      prefWidth="1100.0"
+      styleClass="app-shell"
+      xmlns="http://javafx.com/javafx/26"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Client.controllers.MainLayoutController">
     <children>
 
-        <VBox prefWidth="230.0" spacing="15.0" style="-fx-border-color: #eff3f4; -fx-border-width: 0 1 0 0; -fx-padding: 20 15 20 15;">
+        <!-- ==================== COLUMN 1 - NAVIGATION ==================== -->
+        <VBox maxWidth="300.0"
+              minWidth="240.0"
+              prefWidth="280.0">
+            <styleClass>
+                <String fx:value="sidebar" />
+                <String fx:value="shell-column-nav" />
+            </styleClass>
             <children>
-                <Label text="X" textFill="#1d9bf0">
-                    <font>
-                        <Font name="System Bold" size="32.0" />
-                    </font>
-                    <VBox.margin>
-                        <Insets bottom="10.0" left="10.0" />
-                    </VBox.margin>
-                </Label>
 
-                <Button maxWidth="1.7976931348623157E308" onAction="#showTimeline" style="-fx-background-color: transparent; -fx-text-fill: #0f1419; -fx-alignment: center-left; -fx-font-weight: bold; -fx-font-size: 16px; -fx-cursor: hand;" text="🏠  Home" />
-                <Button maxWidth="1.7976931348623157E308" onAction="#showMessages" style="-fx-background-color: transparent; -fx-text-fill: #0f1419; -fx-alignment: center-left; -fx-font-weight: bold; -fx-font-size: 16px; -fx-cursor: hand;" text="📩  Messages" />
-                <Button maxWidth="1.7976931348623157E308" onAction="#showProfile" style="-fx-background-color: transparent; -fx-text-fill: #0f1419; -fx-alignment: center-left; -fx-font-weight: bold; -fx-font-size: 16px; -fx-cursor: hand;" text="👤  Profile" />
-                <Button maxWidth="1.7976931348623157E308" onAction="#showFollowingList" style="-fx-background-color: transparent; -fx-text-fill: #0f1419; -fx-alignment: center-left; -fx-font-weight: bold; -fx-font-size: 16px; -fx-cursor: hand;" text="🤝  Following" />
-                <Button maxWidth="1.7976931348623157E308" onAction="#showFollowersList" style="-fx-background-color: transparent; -fx-text-fill: #0f1419; -fx-alignment: center-left; -fx-font-weight: bold; -fx-font-size: 16px; -fx-cursor: hand;" text="👥  Followers" />
+                <!-- Brand -->
+                <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="sidebar-brand-row">
+                    <children>
+
+                        <ImageView fx:id="brandLogo"
+                                   fitHeight="28.0"
+                                   fitWidth="28.0"
+                                   preserveRatio="true"/>
+
+                        <Label styleClass="sidebar-brand-name" text="X-Clone"/>
+
+                    </children>
+                </HBox>
+
+                <!-- Back (only visible when history exists) -->
+                <Button fx:id="backButton"
+                        managed="false"
+                        mnemonicParsing="false"
+                        onAction="#handleGoBack"
+                        styleClass="back-button"
+                        text="← Back"
+                        visible="false"/>
+
+                <!-- Navigation menu -->
+                <VBox styleClass="nav-menu">
+                    <children>
+
+                        <fx:include fx:id="homeNav" source="../components/NavigationItem.fxml"/>
+                        <fx:include fx:id="messagesNav" source="../components/NavigationItem.fxml"/>
+                        <fx:include fx:id="profileNav" source="../components/NavigationItem.fxml"/>
+                        <fx:include fx:id="followingNav" source="../components/NavigationItem.fxml"/>
+                        <fx:include fx:id="followersNav" source="../components/NavigationItem.fxml"/>
+
+                    </children>
+                </VBox>
+
+                <Region VBox.vgrow="ALWAYS"/>
+
+                <!-- Who to follow -->
+                <fx:include fx:id="whoToFollow" source="../components/WhoToFollow.fxml"/>
+
+                <!-- Compose entry point -->
+                <fx:include fx:id="composeCard" source="../components/ComposeCard.fxml"/>
+
+                <!-- Theme switcher -->
+                <fx:include fx:id="themeSwitcher" source="../components/ThemeSwitcher.fxml"/>
+
+                <!-- Current user -->
+                <fx:include fx:id="profileBar" source="../components/ProfileCard.fxml"/>
+
             </children>
         </VBox>
 
-        <Pane fx:id="contentArea" minWidth="450.0" HBox.hgrow="ALWAYS" />
+        <!-- ==================== COLUMN 2 - CONTENT ==================== -->
+        <Pane fx:id="contentArea"
+              minWidth="450.0"
+              HBox.hgrow="ALWAYS"/>
 
-        <VBox prefWidth="320.0" spacing="15.0" style="-fx-border-color: #eff3f4; -fx-border-width: 0 0 0 1; -fx-padding: 15;">
+        <!-- ==================== COLUMN 3 - UTILITY ==================== -->
+        <VBox maxWidth="350.0"
+              minWidth="290.0"
+              prefWidth="330.0">
+            <styleClass>
+                <String fx:value="sidebar-right" />
+                <String fx:value="shell-column-utility" />
+            </styleClass>
             <children>
-                <TextField fx:id="searchTextField" onAction="#handleSearch" promptText="Search 🔎" style="-fx-background-color: #eff3f4; -fx-background-radius: 20; -fx-padding: 10 15 10 15;" />
 
-                <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
+                <!-- Branding -->
+                <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="utility-brand">
+                    <children>
+
+                        <VBox>
+                            <children>
+                                <Label styleClass="utility-brand-name" text="X-Clone"/>
+                                <Label styleClass="utility-brand-version" text="Version 2.1.0"/>
+                            </children>
+                        </VBox>
+
+                    </children>
+                </HBox>
+
+                <!-- Search -->
+                <fx:include fx:id="searchInput" source="../components/SearchBox.fxml"/>
+
+                <!-- Widget + search results -->
+                <ScrollPane fitToWidth="true"
+                            VBox.vgrow="ALWAYS">
+                            <styleClass>
+                                <String fx:value="scroll-pane-transparent" />
+                                <String fx:value="scroll-pane-no-hbar" />
+                            </styleClass>
                     <content>
-                        <VBox fx:id="searchResultsContainer" spacing="10.0" />
+                        <VBox styleClass="utility-stack">
+                            <children>
+
+                                <fx:include fx:id="dynamicWidgetPane" source="../components/DynamicWidget.fxml"/>
+
+                                <VBox fx:id="searchResultsContainer" styleClass="search-results-container"/>
+
+                            </children>
+                        </VBox>
                     </content>
                 </ScrollPane>
+
+                <!-- Footer -->
+                <fx:include fx:id="footerLinksArea" source="../components/Footer.fxml"/>
+
             </children>
         </VBox>
 

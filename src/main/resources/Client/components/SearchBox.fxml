@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+
+<!--
+  Reusable search box. The host supplies what a submitted query does via
+  SearchBoxController.setOnSearch, so the box can be embedded in any screen.
+-->
+<HBox fx:id="searchBox"
+      alignment="CENTER_LEFT"
+      styleClass="search-box"
+      xmlns="http://javafx.com/javafx/26"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Client.controllers.SearchBoxController">
+    <children>
+
+        <TextField fx:id="searchInput"
+                   promptText="Search X-Clone or People"
+                   styleClass="search-field"
+                   HBox.hgrow="ALWAYS"/>
+
+    </children>
+</HBox>

@@ -1,21 +1,15 @@
 package Client.controllers;
 
+import Client.AvatarLoader;
 import Client.ClientApplicationContext;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.stage.Stage;
 import logic_core.app.dto.response.UserSummaryResponse;
 
-import java.net.URL;
-import java.util.List;
 import java.util.UUID;
 
 public class UserItemController
@@ -39,9 +33,6 @@ public class UserItemController
     @FXML
     private Button messageButton;
 
-    private static final String DEFAULT_AVATAR =
-            "/Client/images/default-avatar.png";
-
     private final ClientApplicationContext context;
 
     private UserSummaryResponse user;
@@ -60,8 +51,6 @@ public class UserItemController
         rootContainer.setOnMouseClicked(e -> openProfile());
 
         followButton.setOnAction(e -> toggleFollow());
-
-        rootContainer.setStyle("-fx-cursor: hand;");
 
         messageButton.setOnAction(e -> startConversation());
     }
@@ -147,7 +136,11 @@ public class UserItemController
 
                         isFollowing = oldState;
                         updateFollowButton();
+
+                        return;
                     }
+
+                    reloadFollowWidgets();
 
                 })
         ).exceptionally(ex -> {
@@ -166,32 +159,16 @@ public class UserItemController
 
     private void updateFollowButton()
     {
+        followButton.getStyleClass().removeAll("btn-dark", "btn-outline");
         if (isFollowing)
         {
             followButton.setText("Following");
-
-            followButton.setStyle("""
-                    -fx-background-color: transparent;
-                    -fx-border-color: #cfd9de;
-                    -fx-border-radius: 20;
-                    -fx-text-fill: #0f1419;
-                    -fx-font-weight: bold;
-                    -fx-padding: 6 16;
-                    -fx-cursor: hand;
-                    """);
+            followButton.getStyleClass().add("btn-outline");
         }
         else
         {
             followButton.setText("Follow");
-
-            followButton.setStyle("""
-                    -fx-background-color: #0f1419;
-                    -fx-text-fill: white;
-                    -fx-background-radius: 20;
-                    -fx-font-weight: bold;
-                    -fx-padding: 6 16;
-                    -fx-cursor: hand;
-                    """);
+            followButton.getStyleClass().add("btn-dark");
         }
     }
 
@@ -200,6 +177,10 @@ public class UserItemController
         if (user == null)
             return;
 
+        if (context.navigation() != null)
+        {
+            context.navigation().navigate(Client.navigation.NavigationRoute.PROFILE);
+        }
     }
 
     private void hideButtonIfCurrentUser()
@@ -218,82 +199,41 @@ public class UserItemController
         }
     }
 
-    private void loadAvatar(String avatarUrl)
+    /**
+     * The follow graph changed, so the shell widgets that read it must refetch.
+     */
+    private void reloadFollowWidgets()
     {
-        if (avatarUrl == null || avatarUrl.isBlank())
-        {
-            loadDefaultAvatar();
-            return;
-        }
+        MainLayoutController shell = context.getMainLayoutController();
 
-        try
+        if (shell != null)
         {
-            Image image = new Image(avatarUrl, true);
-
-            image.exceptionProperty().addListener((obs, old, ex) ->
-            {
-                if (ex != null)
-                {
-                    Platform.runLater(this::loadDefaultAvatar);
-                }
-            });
-
-            avatarImageView.setImage(image);
-        }
-        catch (Exception e)
-        {
-            loadDefaultAvatar();
+            shell.reloadFollowWidgets();
         }
     }
 
-    private void loadDefaultAvatar()
+    private void loadAvatar(String avatarUrl)
     {
-        URL url = getClass().getResource(DEFAULT_AVATAR);
-
-        if (url != null)
-        {
-            avatarImageView.setImage(
-                    new Image(url.toExternalForm())
-            );
-        }
+        AvatarLoader.loadAvatar(avatarImageView, avatarUrl);
     }
 
     private void startConversation() {
 
-        if (user == null)
+        if (user == null || user.userId() == null)
             return;
 
-        try {
+        MainLayoutController shell = context.getMainLayoutController();
 
-            FXMLLoader loader =
-                    new FXMLLoader(getClass().getResource("/Client/fxml/Messages.fxml"));
+        if (shell != null)
+        {
+            // Ask the shell to open Messages with this user's conversation.
+            shell.requestConversationWith(user.userId());
+            return;
+        }
 
-            loader.setControllerFactory(type -> {
-
-                if (type == MessagesController.class) {
-                    return new MessagesController(context);
-                }
-
-                try {
-                    return type.getDeclaredConstructor().newInstance();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
-
-            Parent root = loader.load();
-
-            MessagesController controller = loader.getController();
-
-            controller.openConversationWith(List.of(user.userId()));
-
-            Stage stage = new Stage();
-            stage.setTitle("Messages");
-            stage.setScene(new Scene(root));
-            stage.show();
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (context.navigation() != null)
+        {
+            context.navigation().navigate(Client.navigation.NavigationRoute.MESSAGES);
         }
     }
 }
