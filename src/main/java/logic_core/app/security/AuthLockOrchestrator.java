@@ -69,4 +69,19 @@ public class AuthLockOrchestrator
 
         return new SessionUserContext(lockedUser, null);
     }
+
+    /**
+     * Locks the user row identified by {@code email} for login-by-email.
+     * Same no-rollback rule as {@link #lockAndGetUserByUsername(String)}: the
+     * lookup writes nothing, so a missing user must not poison the caller's
+     * shared transaction (Issue #21 anti-enumeration handling).
+     */
+    @Transactional(noRollbackFor = NotFoundException.class)
+    public SessionUserContext lockAndGetUserByEmail(String email)
+    {
+        UserModel lockedUser = userRepository.findByEmailForUpdate(email)
+                .orElseThrow(() -> new NotFoundException("User not found during locking."));
+
+        return new SessionUserContext(lockedUser, null);
+    }
 }

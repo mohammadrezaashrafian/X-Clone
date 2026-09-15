@@ -1,12 +1,22 @@
 package Client.controllers;
 
 import Client.ClientApplicationContext;
+import Client.PasswordResetContext;
 import Client.Service.AuthClientService;
+import Client.theme.Theme;
+import Client.theme.ThemeManager;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import logic_core.app.dto.response.AuthResponse;
+
+import java.awt.*;
+import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,8 +25,8 @@ public class RegisterController
 {
     private static final Logger log = Logger.getLogger(RegisterController.class.getName());
 
-    private static final String HOME_FXML = "/Client/fxml/MainLayout.fxml";
-    private static final String LOGIN_FXML = "/Client/fxml/Login.fxml";
+    private static final Client.navigation.NavigationRoute VERIFY_FXML = Client.navigation.NavigationRoute.VERIFY_CODE;
+    private static final Client.navigation.NavigationRoute LOGIN_FXML = Client.navigation.NavigationRoute.LOGIN;
 
     @FXML
     private TextField usernameField;
@@ -39,11 +49,30 @@ public class RegisterController
     @FXML
     private Label errorLabel;
 
+    @FXML
+    private ImageView logoImageView;
+
     private final ClientApplicationContext context;
 
     public RegisterController(ClientApplicationContext context)
     {
         this.context = context;
+    }
+
+    @FXML
+    private void initialize()
+    {
+        if (logoImageView != null && context.getThemeManager() != null)
+        {
+            context.getThemeManager().registerThemeAware(logoImageView, theme ->
+            {
+                java.net.URL url = context.getThemeManager().brandLogo();
+                if (url != null)
+                {
+                    logoImageView.setImage(new javafx.scene.image.Image(url.toExternalForm(), true));
+                }
+            });
+        }
     }
 
     @FXML
@@ -81,7 +110,12 @@ public class RegisterController
                         AuthResponse auth = result.data();
                         log.info("Register OK: " + auth.username() + " / " + auth.userId());
 
-                        context.navigation().navigateTo(HOME_FXML, "X - Home");
+                        // Navigate to email verification screen.
+                        PasswordResetContext.getInstance().setEmail(email);
+                        PasswordResetContext.getInstance()
+                                .setVerificationMode(PasswordResetContext.VerificationMode.REGISTRATION);
+                        PasswordResetContext.getInstance().setCode(null);
+                        context.navigation().navigate(VERIFY_FXML);
                     }
                     else
                     {
@@ -106,7 +140,7 @@ public class RegisterController
     @FXML
     void handleBackToLogin(ActionEvent event)
     {
-        context.navigation().navigateTo(LOGIN_FXML, "X - Login");
+        context.navigation().navigate(LOGIN_FXML);
     }
 
 
@@ -155,5 +189,26 @@ public class RegisterController
                 errorLabel.setManaged(false);
             }
         });
+    }
+
+    @FXML
+    private void handleOpenGitHub(ActionEvent event) {
+        openUrl("https://github.com/mohammadrezaashrafian/X-Clone");
+    }
+
+    @FXML
+    private void handleOpenDocumentation(ActionEvent event) {
+        openUrl("https://github.com/mohammadrezaashrafian/X-Clone/wiki");
+    }
+
+    private void openUrl(String url) {
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(new URI(url));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Could not open link.");
+        }
     }
 }

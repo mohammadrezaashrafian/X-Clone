@@ -42,5 +42,12 @@ public interface UserRepository
 
 Optional<UserModel> findByUsernameForUpdate(String username);
 
+    /**
+     * Loads the non-deleted user with the given email using a pessimistic
+     * write lock, mirroring {@link #findByUsernameForUpdate(String)} for
+     * login-by-email.
+     */
+    Optional<UserModel> findByEmailForUpdate(String email);
+
     List<UserModel> searchUsers(UUID actorId, String query, int limit, int pageSize);
 }

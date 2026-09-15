@@ -12,5 +12,6 @@ public record AuthResponse(
         String token,
         OffsetDateTime expiresAt,
         String message,
-        UUID sessionId
+        UUID sessionId,
+        boolean emailVerified
 ) {}
